@@ -101,32 +101,13 @@ registerForm.addEventListener('submit', async function(e) {
     try {
         console.log('📝 Tentando cadastrar:', { fullName, email });
         
-        // Registrar usuário no Firebase (usando fullName ao invés de username)
+        // Registrar usuário no Firebase SOMENTE
         const result = await firebaseService.registerUser(fullName, email, password);
 
         console.log('📊 Resultado do cadastro:', result);
 
         if (result.success) {
-            console.log('✅ Usuário cadastrado:', result.user);
-            
-            // SALVAR TAMBÉM NO LOCALSTORAGE (sistema híbrido)
-            try {
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
-                users.push({
-                    fullName: fullName,
-                    email: email,
-                    password: password, // Em produção, deveria ser hash
-                    phone: '',
-                    createdAt: new Date().toISOString()
-                });
-                localStorage.setItem('users', JSON.stringify(users));
-                console.log('✅ Usuário também salvo no localStorage');
-            } catch (localError) {
-                console.warn('⚠️ Não foi possível salvar no localStorage:', localError);
-            }
-            
-            // NÃO enviar email - removido para evitar erros
-            // enviarEmailBoasVindas(fullName, password, email);
+            console.log('✅ Usuário cadastrado no Firebase:', result.user);
             
             // Mostrar mensagem de sucesso e redirecionar
             alert('✅ Cadastro realizado com sucesso!\n\nVocê será redirecionado para fazer login.');
@@ -204,48 +185,15 @@ loginForm.addEventListener('submit', async function(e) {
     submitBtn.disabled = true;
 
     try {
-        console.log('🔐 Tentando fazer login com email:', usernameOrEmail);
+        console.log('🔐 Tentando fazer login com Firebase:', usernameOrEmail);
         
-        // Verificar se é admin (login local)
-        if (usernameOrEmail === 'admin@florense.com' && password === 'admin123') {
-            // Login de admin (sem Firebase)
-            localStorage.setItem('adminUser', JSON.stringify({
-                fullName: 'Administrador',
-                email: 'admin@florense.com',
-                isAdmin: true,
-                loginTime: new Date().toISOString()
-            }));
-            
-            console.log('✅ Login admin local realizado');
-            window.location.href = "admin.html";
-            return;
-        }
+        // Login SOMENTE via Firebase
+        const result = await firebaseService.loginUser(usernameOrEmail, password);
 
-        // SISTEMA HÍBRIDO: Tentar localStorage PRIMEIRO (mais rápido)
-        console.log('🔄 Tentando login com localStorage...');
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const localUser = users.find(u => 
-            u.email === usernameOrEmail && 
-            u.password === password
-        );
+        console.log('📊 Resultado do login:', result);
 
-        if (localUser) {
-            console.log('✅ Login localStorage realizado:', localUser.email);
-            
-            // Salvar usuário logado COM TODOS OS DADOS (incluindo foto e bio)
-            localStorage.setItem('loggedUser', JSON.stringify({
-                fullName: localUser.fullName || localUser.username || 'Usuário',
-                email: localUser.email,
-                phone: localUser.phone || '',
-                photo: localUser.photo || null,
-                bio: localUser.bio || '',
-                loginTime: new Date().toISOString()
-            }));
-            
-            console.log('✅ Dados do usuário salvos em loggedUser:', {
-                nome: localUser.fullName,
-                temFoto: !!localUser.photo
-            });
+        if (result.success) {
+            console.log('✅ Login Firebase realizado com sucesso!');
             
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
@@ -253,13 +201,20 @@ loginForm.addEventListener('submit', async function(e) {
             console.log('🔄 Redirecionando para trello-home...');
             window.location.href = "trello-home.html";
             return;
+        } else {
+            console.error('❌ Erro no login Firebase:', result.error);
+            
+            let errorMessage = 'Email ou senha incorretos!';
+            if (result.error && result.error.code === 'auth/user-not-found') {
+                errorMessage = 'Usuário não encontrado. Cadastre-se primeiro!';
+            } else if (result.error && result.error.code === 'auth/wrong-password') {
+                errorMessage = 'Senha incorreta!';
+            }
+            
+            alert(errorMessage);
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
         }
-        
-        // Se não encontrou no localStorage, mostrar erro (NÃO tentar Firebase)
-        console.error('❌ Usuário não encontrado no localStorage');
-        alert('Email ou senha incorretos!\n\nSe você acabou de se cadastrar, tente novamente.');
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
         
     } catch (error) {
         console.error('❌ Erro no login (CATCH):', error);
