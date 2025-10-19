@@ -235,13 +235,13 @@ loginForm.addEventListener('submit', async function(e) {
                         email: profileResult.user.email,
                         fullName: profileResult.user.username || profileResult.user.fullName || result.user.displayName,
                         username: profileResult.user.username || profileResult.user.fullName,
-                        photo: profileResult.user.photoURL || null,  // FOTO DO FIRESTORE
+                        photo: profileResult.user.profilePhoto || null,  // ⚠️ CAMPO CORRETO DO FIRESTORE
                         bio: profileResult.user.bio || '',
                         phone: profileResult.user.phone || '',
                         uid: result.user.uid,
                         loginTime: new Date().toISOString()
                     };
-                    console.log('✅ Dados carregados do Firestore:', { temFoto: !!userData.photo });
+                    console.log('✅ Dados carregados do Firestore:', { temFoto: !!userData.photo, fotoURL: userData.photo });
                 } else {
                     // Fallback: usar dados do Auth
                     userData = {
