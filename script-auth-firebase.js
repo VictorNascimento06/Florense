@@ -53,7 +53,7 @@ function enviarEmailBoasVindas(username, password, email) {
     // Verificar se EmailJS está carregado
     if (typeof emailjs === 'undefined') {
         console.error('❌ EmailJS não está carregado!');
-        alert('Cadastro realizado com sucesso!\n\nRedirecionando...');
+        alert(`✅ Cadastro realizado com sucesso!\n\n👤 Nome: ${username}\n📧 Email: ${email}\n🔑 Senha: ${password}\n\n⚠️ IMPORTANTE: Anote suas credenciais!`);
         window.location.href = "trello-home.html";
         return;
     }
@@ -69,7 +69,7 @@ function enviarEmailBoasVindas(username, password, email) {
 
     console.log('📤 Enviando email com params:', templateParams);
 
-    emailjs.send('service_8p4opzm', 'template_ovrpc2h', templateParams)
+    emailjs.send('service_k6cc75i', 'template_ovrpc2h', templateParams)
         .then(function(response) {
             console.log('✅ Email enviado com sucesso!');
             console.log('📊 Response:', response.status, response.text);
@@ -83,8 +83,8 @@ function enviarEmailBoasVindas(username, password, email) {
             console.error('Status:', error.status);
             console.error('Objeto completo:', error);
             
-            // Redirecionar mesmo com erro no email
-            alert('✅ Cadastro realizado com sucesso!\n\n⚠️ Não foi possível enviar o e-mail de boas-vindas.\nVocê já pode fazer login!');
+            // FALLBACK: Mostrar credenciais na tela
+            alert(`✅ Cadastro realizado com sucesso!\n\n⚠️ O email não pôde ser enviado.\n\n👤 Nome: ${username}\n📧 Email: ${email}\n🔑 Senha: ${password}\n\n⚠️ ANOTE SUAS CREDENCIAIS!\n\nVocê será redirecionado...`);
             window.location.href = "trello-home.html";
         });
 }
