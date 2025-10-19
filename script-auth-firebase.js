@@ -47,20 +47,41 @@ document.addEventListener('DOMContentLoaded', function() {
 // FUNÇÃO: ENVIAR EMAIL DE BOAS-VINDAS
 // ============================================
 function enviarEmailBoasVindas(username, password, email) {
+    console.log('📧 Preparando envio de email...');
+    console.log('📊 Dados:', { username, email });
+    
+    // Verificar se EmailJS está carregado
+    if (typeof emailjs === 'undefined') {
+        console.error('❌ EmailJS não está carregado!');
+        alert('Cadastro realizado com sucesso!\n\nRedirecionando...');
+        window.location.href = "trello-home.html";
+        return;
+    }
+    
     const templateParams = {
         to_name: username,
         user_password: password,
         to_email: email
     };
 
-    emailjs.send('service_4bk2wwi', 'template_k4q0kfq', templateParams)
+    console.log('📤 Enviando email com params:', templateParams);
+
+    emailjs.send('service_8p4opzm', 'template_k4q0kfq', templateParams)
         .then(function(response) {
-            console.log('✅ Email enviado!', response.status, response.text);
-            alert('Cadastro realizado! Verifique seu e-mail.');
+            console.log('✅ Email enviado com sucesso!');
+            console.log('📊 Response:', response.status, response.text);
+            alert('✅ Cadastro realizado com sucesso!\n\n📧 Verifique seu e-mail para as credenciais de acesso.');
             window.location.href = "trello-home.html";
-        }, function(error) {
-            console.error('❌ Erro ao enviar email:', error);
-            alert('Cadastro realizado, mas houve um problema ao enviar o e-mail.');
+        })
+        .catch(function(error) {
+            console.error('❌ ERRO DETALHADO ao enviar email:');
+            console.error('Tipo:', error.name);
+            console.error('Mensagem:', error.text || error.message);
+            console.error('Status:', error.status);
+            console.error('Objeto completo:', error);
+            
+            // Redirecionar mesmo com erro no email
+            alert('✅ Cadastro realizado com sucesso!\n\n⚠️ Não foi possível enviar o e-mail de boas-vindas.\nVocê já pode fazer login!');
             window.location.href = "trello-home.html";
         });
 }
