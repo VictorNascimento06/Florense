@@ -224,18 +224,54 @@ loginForm.addEventListener('submit', async function(e) {
         if (result.success) {
             console.log('✅ Login Firebase realizado com sucesso!');
             
-            // SALVAR DADOS DO USUÁRIO NO LOCALSTORAGE
-            const userData = {
-                email: result.user.email,
-                fullName: result.user.displayName || result.user.email.split('@')[0],
-                username: result.user.displayName || result.user.email.split('@')[0],
-                photo: result.user.photoURL || null,
-                uid: result.user.uid,
-                loginTime: new Date().toISOString()
-            };
-            
-            localStorage.setItem('loggedUser', JSON.stringify(userData));
-            console.log('✅ Dados salvos no localStorage:', userData);
+            // BUSCAR DADOS COMPLETOS DO FIRESTORE (incluindo foto)
+            try {
+                const profileResult = await firebaseService.getUserProfile(result.user.uid);
+                
+                let userData;
+                if (profileResult.success && profileResult.user) {
+                    // Usar dados do Firestore (tem foto, bio, etc.)
+                    userData = {
+                        email: profileResult.user.email,
+                        fullName: profileResult.user.username || profileResult.user.fullName || result.user.displayName,
+                        username: profileResult.user.username || profileResult.user.fullName,
+                        photo: profileResult.user.photoURL || null,  // FOTO DO FIRESTORE
+                        bio: profileResult.user.bio || '',
+                        phone: profileResult.user.phone || '',
+                        uid: result.user.uid,
+                        loginTime: new Date().toISOString()
+                    };
+                    console.log('✅ Dados carregados do Firestore:', { temFoto: !!userData.photo });
+                } else {
+                    // Fallback: usar dados do Auth
+                    userData = {
+                        email: result.user.email,
+                        fullName: result.user.displayName || result.user.email.split('@')[0],
+                        username: result.user.displayName || result.user.email.split('@')[0],
+                        photo: result.user.photoURL || null,
+                        uid: result.user.uid,
+                        loginTime: new Date().toISOString()
+                    };
+                    console.log('⚠️ Usando dados do Auth (Firestore não disponível)');
+                }
+                
+                // Salvar no localStorage
+                localStorage.setItem('loggedUser', JSON.stringify(userData));
+                console.log('✅ Dados salvos no localStorage');
+                
+            } catch (firestoreError) {
+                console.warn('⚠️ Erro ao buscar dados do Firestore:', firestoreError);
+                // Salvar dados básicos do Auth
+                const userData = {
+                    email: result.user.email,
+                    fullName: result.user.displayName || result.user.email.split('@')[0],
+                    username: result.user.displayName || result.user.email.split('@')[0],
+                    photo: result.user.photoURL || null,
+                    uid: result.user.uid,
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('loggedUser', JSON.stringify(userData));
+            }
             
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
