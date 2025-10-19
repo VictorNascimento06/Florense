@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Dados Duplicados - Florense</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .btn {
+            background: #0079bf;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: #026aa7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 121, 191, 0.4);
+        }
+
+        .btn-danger {
+            background: #f44336;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpeza de Dados</h1>
+        <p class="subtitle">Remova quadros duplicados e dados inconsistentes</p>
+
+        <div class="info-box">
+            <strong>ℹ️ Informações:</strong><br>
+            Esta ferramenta vai analisar e limpar seus dados do localStorage, removendo quadros duplicados e mantendo apenas um de cada.
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Atenção:</strong><br>
+            Esta ação não pode ser desfeita. Certifique-se de fazer um backup se necessário.
+        </div>
+
+        <div class="success-box" id="successBox">
+            <strong>✅ Sucesso!</strong><br>
+            Dados limpos com sucesso. Você pode voltar para a página inicial.
+        </div>
+
+        <button class="btn" onclick="analisarDados()">🔍 Analisar Dados</button>
+        <button class="btn" onclick="removerDuplicados()">🧹 Remover Duplicados</button>
+        <button class="btn btn-danger" onclick="limparTudo()">🗑️ Limpar Tudo (Reset Completo)</button>
+        <button class="btn btn-secondary" onclick="voltarHome()">← Voltar para Home</button>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const status = document.getElementById('status');
+            status.textContent += message + '\n';
+            status.scrollTop = status.scrollHeight;
+        }
+
+        function analisarDados() {
+            const status = document.getElementById('status');
+            status.textContent = '';
+            log('🔍 Analisando dados...\n');
+
+            const loggedUser = JSON.parse(localStorage.getItem('loggedUser') || 'null');
+            
+            if (!loggedUser) {
+                log('❌ Nenhum usuário logado encontrado.');
+                return;
+            }
+
+            log(`👤 Usuário: ${loggedUser.email || loggedUser.username}`);
+            
+            const boardsKey = `boards_${loggedUser.email}`;
+            const boards = JSON.parse(localStorage.getItem(boardsKey) || '[]');
+            
+            log(`\n📊 Total de quadros: ${boards.length}`);
+            
+            if (boards.length === 0) {
+                log('ℹ️ Nenhum quadro encontrado.');
+                return;
+            }
+
+            // Contar duplicados por nome
+            const boardNames = {};
+            boards.forEach(board => {
+                if (boardNames[board.name]) {
+                    boardNames[board.name]++;
+                } else {
+                    boardNames[board.name] = 1;
+                }
+            });
+
+            log('\n📋 Quadros encontrados:');
+            Object.keys(boardNames).forEach(name => {
+                const count = boardNames[name];
+                const status = count > 1 ? `❌ DUPLICADO (${count}x)` : '✅';
+                log(`  ${status} ${name}`);
+            });
+
+            // Verificar todos os outros dados do localStorage
+            log('\n🗂️ Outras chaves no localStorage:');
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('boards_') || key.startsWith('currentBoardId_')) {
+                    const data = localStorage.getItem(key);
+                    log(`  📁 ${key}: ${data.length} caracteres`);
+                }
+            }
+        }
+
+        function removerDuplicados() {
+            const status = document.getElementById('status');
+            status.textContent = '';
+            log('🧹 Removendo duplicados...\n');
+
+            const loggedUser = JSON.parse(localStorage.getItem('loggedUser') || 'null');
+            
+            if (!loggedUser) {
+                log('❌ Nenhum usuário logado encontrado.');
+                return;
+            }
+
+            const boardsKey = `boards_${loggedUser.email}`;
+            const boards = JSON.parse(localStorage.getItem(boardsKey) || '[]');
+            
+            if (boards.length === 0) {
+                log('ℹ️ Nenhum quadro encontrado.');
+                return;
+            }
+
+            // Remover duplicados - manter apenas o primeiro de cada nome
+            const uniqueBoards = [];
+            const seenNames = new Set();
+
+            boards.forEach(board => {
+                if (!seenNames.has(board.name)) {
+                    seenNames.add(board.name);
+                    uniqueBoards.push(board);
+                    log(`✅ Mantido: ${board.name}`);
+                } else {
+                    log(`🗑️ Removido duplicado: ${board.name}`);
+                }
+            });
+
+            // Salvar os quadros únicos
+            localStorage.setItem(boardsKey, JSON.stringify(uniqueBoards));
+
+            log(`\n✨ Limpeza concluída!`);
+            log(`📊 Antes: ${boards.length} quadros`);
+            log(`📊 Depois: ${uniqueBoards.length} quadros`);
+            log(`🗑️ Removidos: ${boards.length - uniqueBoards.length} duplicados`);
+
+            document.getElementById('successBox').style.display = 'block';
+        }
+
+        function limparTudo() {
+            if (!confirm('⚠️ ATENÇÃO! Isso vai apagar TODOS os seus quadros e dados.\n\nTem certeza que deseja continuar?')) {
+                return;
+            }
+
+            if (!confirm('🚨 ÚLTIMA CHANCE! Esta ação não pode ser desfeita.\n\nDeseja realmente apagar tudo?')) {
+                return;
+            }
+
+            const status = document.getElementById('status');
+            status.textContent = '';
+            log('🗑️ Limpando TODOS os dados...\n');
+
+            const loggedUser = JSON.parse(localStorage.getItem('loggedUser') || 'null');
+            
+            if (loggedUser) {
+                const boardsKey = `boards_${loggedUser.email}`;
+                const currentBoardIdKey = `currentBoardId_${loggedUser.email}`;
+                
+                localStorage.removeItem(boardsKey);
+                localStorage.removeItem(currentBoardIdKey);
+                
+                log(`✅ Removido: ${boardsKey}`);
+                log(`✅ Removido: ${currentBoardIdKey}`);
+            }
+
+            // Limpar outros dados relacionados
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('boards_') || key.startsWith('currentBoardId_')) {
+                    keysToRemove.push(key);
+                }
+            }
+
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                log(`✅ Removido: ${key}`);
+            });
+
+            log('\n✨ Todos os dados foram removidos!');
+            log('🔄 Ao voltar para o home, novos quadros padrão serão criados.');
+            
+            document.getElementById('successBox').style.display = 'block';
+        }
+
+        function voltarHome() {
+            window.location.href = 'trello-home.html';
+        }
+
+        // Executar análise automática ao carregar
+        window.onload = () => {
+            analisarDados();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Admin - Florense</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover { background: #0056b3; }
+        .info { 
+            background: #e7f3ff; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724;
+            border-left-color: #28a745;
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24;
+            border-left-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 Criar Usuário Administrador</h1>
+        
+        <div class="info">
+            <strong>ℹ️ Instruções:</strong><br>
+            1. Preencha os dados abaixo<br>
+            2. Clique em "Criar Admin"<br>
+            3. O usuário será criado como administrador no Firebase<br>
+            4. Depois você poderá fazer login normalmente
+        </div>
+
+        <form id="createAdminForm">
+            <input type="text" id="username" placeholder="Nome de usuário" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Senha (mínimo 6 caracteres)" required minlength="6">
+            <button type="submit">🔐 Criar Admin</button>
+        </form>
+
+        <div id="message" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Config -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+
+    <script>
+        const form = document.getElementById('createAdminForm');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            messageDiv.innerHTML = '<div class="info">⏳ Criando administrador...</div>';
+
+            try {
+                console.log('📝 Criando admin:', { username, email });
+
+                // Criar usuário no Firebase Authentication
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                console.log('✅ Usuário criado no Auth:', user.uid);
+
+                // Atualizar perfil com nome
+                await user.updateProfile({
+                    displayName: username
+                });
+
+                console.log('✅ Perfil atualizado');
+
+                // Criar documento no Firestore como ADMIN
+                await db.collection('users').doc(user.uid).set({
+                    uid: user.uid,
+                    username: username,
+                    email: email,
+                    isAdmin: true, // 👈 ADMIN
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                    totalBoards: 0,
+                    totalWorkspaces: 0
+                });
+
+                console.log('✅ Documento criado no Firestore como ADMIN');
+
+                // Criar registro de acesso
+                await db.collection('userAccess').add({
+                    userId: user.uid,
+                    username: username,
+                    email: email,
+                    loginTime: firebase.firestore.FieldValue.serverTimestamp(),
+                    ipAddress: 'Setup inicial',
+                    userAgent: navigator.userAgent
+                });
+
+                console.log('✅ Registro de acesso criado');
+
+                messageDiv.innerHTML = `
+                    <div class="info success">
+                        <strong>✅ Administrador criado com sucesso!</strong><br><br>
+                        <strong>Usuário:</strong> ${username}<br>
+                        <strong>Email:</strong> ${email}<br>
+                        <strong>Tipo:</strong> Administrador<br>
+                        <strong>UID:</strong> ${user.uid}<br><br>
+                        <a href="login.html" style="color: #155724; font-weight: bold;">➡️ Ir para Login</a>
+                    </div>
+                `;
+
+                form.reset();
+
+            } catch (error) {
+                console.error('❌ Erro ao criar admin:', error);
+                
+                let errorMsg = 'Erro desconhecido';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMsg = 'Este email já está cadastrado!';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg = 'Email inválido!';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMsg = 'Senha muito fraca! Use pelo menos 6 caracteres.';
+                } else if (error.code === 'auth/api-key-not-valid') {
+                    errorMsg = 'Erro na configuração do Firebase. Verifique a API Key.';
+                } else {
+                    errorMsg = error.message;
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="info error">
+                        <strong>❌ Erro ao criar administrador</strong><br><br>
+                        <strong>Código:</strong> ${error.code || 'Desconhecido'}<br>
+                        <strong>Mensagem:</strong> ${errorMsg}
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

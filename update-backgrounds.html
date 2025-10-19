@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualizar Backgrounds dos Boards</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: #0079bf;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 121, 191, 0.3);
+        }
+        
+        .btn:hover {
+            background: #026aa7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 121, 191, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+        
+        .preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .preview-card {
+            height: 100px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .preview-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .preview-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+            border-radius: 8px;
+        }
+        
+        .preview-title {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            z-index: 1;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .status {
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #99d6ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Atualizar Backgrounds dos Boards</h1>
+        <p>Esta ferramenta irá recriar os boards padrão com backgrounds inspiradores e visuais em vez de cores sólidas.</p>
+        
+        <div class="preview">
+            <div class="preview-card" style="background-image: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');">
+                <div class="preview-title">Projeto Florense</div>
+            </div>
+            <div class="preview-card" style="background-image: url('https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');">
+                <div class="preview-title">Desenvolvimento Mobile</div>
+            </div>
+            <div class="preview-card" style="background-image: url('https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');">
+                <div class="preview-title">Marketing Digital</div>
+            </div>
+            <div class="preview-card" style="background-image: url('https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');">
+                <div class="preview-title">Recursos Humanos</div>
+            </div>
+        </div>
+        
+        <div id="status"></div>
+        
+        <button class="btn" onclick="updateBackgrounds()">
+            ✨ Aplicar Novos Backgrounds
+        </button>
+        
+        <button class="btn btn-secondary" onclick="goToTrello()">
+            📋 Ir para o Trello
+        </button>
+    </div>
+
+    <script>
+        function updateBackgrounds() {
+            const statusDiv = document.getElementById('status');
+            
+            try {
+                // Limpar localStorage dos boards
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.includes('boards_') || key.includes('florense-boards')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                statusDiv.innerHTML = '<div class="status success">✅ Backgrounds atualizados com sucesso! Os novos boards serão criados com imagens inspiradoras.</div>';
+                
+                // Habilitar botão para ir ao Trello
+                setTimeout(() => {
+                    statusDiv.innerHTML += '<div class="status info">💡 Agora acesse o Trello para ver os novos backgrounds!</div>';
+                }, 1000);
+                
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">❌ Erro ao atualizar: ' + error.message + '</div>';
+            }
+        }
+        
+        function goToTrello() {
+            window.open('trello-home.html', '_blank');
+        }
+        
+        // Auto-mostrar informações
+        window.onload = function() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '<div class="status info">ℹ️ Clique em "Aplicar Novos Backgrounds" para atualizar os boards existentes.</div>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Florense | Trello</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="trello-home.css?v=2.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header class="trello-header">
+        <nav class="header-nav">
+            <div class="nav-left">
+                <div class="logo-container" onclick="goBack()">
+                    <span class="logo-text">Florense</span>
+                </div>
+                
+                <div class="nav-menu">
+                    <div class="nav-item dropdown" id="workspaces-dropdown">
+                        <button class="nav-button">
+                            <span>Espaços de trabalho</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-center">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Pesquisar">
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <button class="create-btn" id="create-btn">
+                    <i class="fas fa-plus"></i>
+                    Criar
+                </button>
+                
+                <button class="notification-btn" id="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notification-badge">0</span>
+                </button>
+                
+                <div class="notifications-dropdown" id="notifications-dropdown">
+                    <div class="notifications-header">
+                        <h3>Notificações</h3>
+                        <button class="mark-all-read" id="mark-all-read">Marcar todas como lidas</button>
+                    </div>
+                    <div class="notifications-list" id="notifications-list">
+                        <!-- Notificações serão inseridas aqui dinamicamente -->
+                    </div>
+                    <div class="notifications-footer">
+                        <button class="clear-all-notifications" id="clear-all-notifications">Limpar todas</button>
+                    </div>
+                </div>
+                
+                <button class="info-btn" id="support-btn">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                
+                <div class="support-dropdown" id="support-dropdown">
+                    <div class="dropdown-content">
+                        <a href="https://wa.me/5521999397195?text=Olá,%20preciso%20de%20suporte%20com%20o%20sistema%20Florense" target="_blank" class="dropdown-link">
+                            <i class="fab fa-whatsapp"></i>
+                            Falar com o suporte (WhatsApp)
+                        </a>
+                        <a href="mailto:vhnascimento2808@hotmail.com?subject=Suporte%20-%20Sistema%20Florense" class="dropdown-link">
+                            <i class="fas fa-envelope"></i>
+                            Enviar email
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="user-avatar" id="user-avatar">
+                    <span id="user-initial">U</span>
+                </div>
+                
+                <div class="user-dropdown" id="user-dropdown">
+                    <div class="dropdown-header">
+                        <div class="user-info">
+                            <div class="avatar-large">
+                                <span id="avatar-large-initial">U</span>
+                            </div>
+                            <div class="user-details">
+                                <h4 id="user-name">Usuário Florense</h4>
+                                <p id="user-email">usuario@florense.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-content">
+                        <a href="#" class="dropdown-link" id="profile-btn">
+                            <i class="fas fa-user"></i>
+                            Perfil
+                        </a>
+                        <a href="#" class="dropdown-link" id="theme-toggle-btn">
+                            <i class="fas fa-sun" id="theme-icon"></i>
+                            <span id="theme-text">Tema Claro</span>
+                        </a>
+                        <hr class="dropdown-divider">
+                        <button class="dropdown-link logout-btn" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sair
+                        </button>
+                    </div> 
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-item">
+                    <i class="fas fa-copy"></i>
+                    <span>Modelos</span>
+                </div>
+                <div class="sidebar-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Início</span>
+                </div>
+            </div>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Espaços de trabalho</h3>
+                <div class="workspace-item">
+                    <div class="workspace-avatar">F</div>
+                    <div class="workspace-info">
+                        <span class="workspace-name">Florense Workspace</span>
+                        <span class="workspace-type">Privado</span>
+                    </div>
+                    <i class="fas fa-cog workspace-settings"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <div class="content-header">
+                <div class="header-actions">
+                    <h1 class="page-title">
+                        <i class="fas fa-user"></i>
+                        Quadros
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Recent Boards Section -->
+            <section class="recent-section">
+                <div class="section-header-simple">
+                    <div class="section-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h2 class="section-title">Visualizado recentemente</h2>
+                </div>
+
+                <div class="boards-grid">
+                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')">
+                        <div class="board-overlay">
+                            <span class="board-name">Projeto Florense</span>
+                        </div>
+                    </div>
+
+                    <div class="board-card gradient-purple">
+                        <div class="board-overlay">
+                            <span class="board-name">Desenvolvimento Mobile</span>
+                        </div>
+                    </div>
+
+                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')">
+                        <div class="board-overlay">
+                            <span class="board-name">Marketing Digital</span>
+                        </div>
+                    </div>
+
+                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')">
+                        <div class="board-overlay">
+                            <span class="board-name">Recursos Humanos</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Workspace Section -->
+            <section class="workspace-section">
+                <div class="workspace-header">
+                    <div class="workspace-info-section">
+                        <div class="workspace-avatar-large">F</div>
+                        <h2 class="workspace-name">Florense Workspace</h2>
+                    </div>
+                    
+                    <div class="workspace-actions">
+                        <button class="workspace-btn" onclick="showBoards()">
+                            <i class="fas fa-th-large"></i>
+                            Quadros
+                        </button>
+                        <button class="workspace-btn" onclick="showMembers()">
+                            <i class="fas fa-users"></i>
+                            Membros
+                        </button>
+                        <button class="workspace-btn" onclick="showSettings(this)">
+                            <i class="fas fa-cog"></i>
+                            Configurações
+                        </button>
+                    </div>
+                </div>
+
+                <div class="boards-grid">
+                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')" onclick="openBoard('board1')">
+                        <div class="board-overlay">
+                            <span class="board-name">Projeto Principal</span>
+                        </div>
+                    </div>
+
+                    <div class="board-card gradient-purple" onclick="openBoard('board2')">
+                        <div class="board-overlay">
+                            <span class="board-name">Design System</span>
+                        </div>
+                    </div>
+
+                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')" onclick="openBoard('board3')">
+                        <div class="board-overlay">
+                            <span class="board-name">Sprint Planning</span>
+                        </div>
+                    </div>
+
+                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')" onclick="openBoard('board4')">
+                        <div class="board-overlay">
+                            <span class="board-name">QA Testing</span>
+                        </div>
+                    </div>
+
+                    <div class="create-board-card" onclick="showCreateBoardModal(this)">
+                        <div class="create-board-content">
+                            <span class="create-board-text">Criar novo quadro</span>
+                            <div class="create-board-subtitle">6 restante(s)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view-closed-boards">
+                    <button class="view-closed-btn">
+                        Ver todos os quadros fechados
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Create Board Modal -->
+    <div class="modal" id="create-board-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Criar quadro</h3>
+                <button class="modal-close" onclick="closeCreateBoardModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="create-board-form" onsubmit="createNewBoard(event)">
+                <div class="form-row">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label>Título do quadro</label>
+                            <input type="text" id="board-title-input" placeholder="Digite o nome do quadro..." required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>✨ Dica: Se não selecionar um fundo, escolheremos um inspirador para você!</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-column">
+                        <div class="board-preview" id="board-preview">
+                            <div class="preview-background" id="preview-background"></div>
+                            <div class="preview-overlay">
+                                <span class="preview-title" id="preview-title">Meu Novo Board</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Plano de fundo</label>
+                    
+                    <!-- Backgrounds Inspiradores -->
+                    <h5 class="bg-category-title">✨ Recomendados</h5>
+                    <div class="background-grid">
+                        <div class="bg-option selected" data-bg="nature1" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="sunset1" style="background-image: url('https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="ocean1" style="background-image: url('https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="gradient1" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                        <div class="bg-option" data-bg="tropical1" style="background-image: url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="beach1" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'); background-size: cover; background-position: center;"></div>
+                    </div>
+                    
+                    <!-- Gradients -->
+                    <h5 class="bg-category-title">🎨 Gradientes</h5>
+                    <div class="background-grid">
+                        <div class="bg-option" data-bg="gradient1" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                        <div class="bg-option" data-bg="gradient2" style="background: linear-gradient(135deg, #f093fb, #f5576c);"></div>
+                        <div class="bg-option" data-bg="gradient3" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"></div>
+                        <div class="bg-option" data-bg="gradient4" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"></div>
+                        <div class="bg-option" data-bg="gradient5" style="background: linear-gradient(135deg, #fa709a, #fee140);"></div>
+                        <div class="bg-option" data-bg="gradient6" style="background: linear-gradient(135deg, #a8edea, #fed6e3);"></div>
+                    </div>
+                    
+                    <!-- Nature Images -->
+                    <h5 class="bg-category-title">🌿 Natureza</h5>
+                    <div class="background-grid">
+                        <div class="bg-option" data-bg="nature2" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="nature2" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="nature3" style="background-image: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="nature4" style="background-image: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="nature5" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="nature6" style="background-image: url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                    </div>
+                    
+                    <!-- Mountain & Ocean -->
+                    <h5 class="bg-category-title">Montanhas e Oceano</h5>
+                    <div class="background-grid">
+                        <div class="bg-option" data-bg="gradient2" style="background: linear-gradient(135deg, #f093fb, #f5576c);"></div>
+                        <div class="bg-option" data-bg="mountain2" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="ocean1" style="background-image: url('https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="ocean2" style="background-image: url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="forest1" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="sunset1" style="background-image: url('https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=800'); background-size: cover; background-position: center;"></div>
+                    </div>
+                    
+                    <!-- Paisagens Tropicais -->
+                    <h5 class="bg-category-title">Paisagens Tropicais</h5>
+                    <div class="background-grid">
+                        <div class="bg-option" data-bg="tropical1" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="tropical2" style="background-image: url('https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="beach1" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="beach2" style="background-image: url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="jungle1" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="waterfall1" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;"></div>
+                    </div>
+                    
+                    <!-- Céu e Atmosfera -->
+                    <h5 class="bg-category-title">Céu e Atmosfera</h5>
+                    <div class="background-grid">
+                        <div class="bg-option" data-bg="sky1" style="background-image: url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="gradient3" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"></div>
+                        <div class="bg-option" data-bg="sunrise1" style="background-image: url('https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="storm1" style="background-image: url('https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="aurora1" style="background-image: url('https://images.unsplash.com/photo-1579033461380-adb47c3eb938?w=800'); background-size: cover; background-position: center;"></div>
+                        <div class="bg-option" data-bg="stars1" style="background-image: url('https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?w=800'); background-size: cover; background-position: center;"></div>
+                    </div>
+                </div>
+                <button type="submit" class="create-board-submit">Criar quadro</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Perfil do Usuário -->
+    <div class="modal" id="profile-modal">
+        <div class="modal-content profile-modal-content">
+            <div class="modal-header">
+                <h2>Meu Perfil</h2>
+                <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <form class="profile-form" onsubmit="saveProfile(event)">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar-large" id="profile-avatar-display">
+                        <span id="profile-avatar-initial">U</span>
+                        <img id="profile-avatar-image" style="display: none;" />
+                    </div>
+                    <div class="profile-avatar-actions">
+                        <label for="profile-photo-input" class="upload-photo-btn">
+                            <i class="fas fa-camera"></i>
+                            Alterar foto
+                        </label>
+                        <input type="file" id="profile-photo-input" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
+                        <button type="button" class="remove-photo-btn" id="remove-photo-btn" onclick="removePhoto()" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            Remover foto
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-name">Nome completo</label>
+                    <input type="text" id="profile-name" class="form-input" placeholder="Digite seu nome completo" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-email">Email</label>
+                    <input type="email" id="profile-email" class="form-input" placeholder="seu@email.com" readonly>
+                    <small class="form-hint">O email não pode ser alterado</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-phone">Telefone de contato</label>
+                    <input type="tel" id="profile-phone" class="form-input" placeholder="(00) 00000-0000">
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-bio">Sobre mim (opcional)</label>
+                    <textarea id="profile-bio" class="form-textarea" rows="3" placeholder="Conte um pouco sobre você..."></textarea>
+                </div>
+
+                <div class="profile-actions">
+                    <button type="button" class="btn-secondary" onclick="closeProfileModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script de Verificação Simples -->
+    <script>
+        // Verificar se há usuário logado
+        const loggedUser = JSON.parse(localStorage.getItem('loggedUser') || 'null');
+        if (!loggedUser || !loggedUser.email) {
+            console.warn('⚠️ Usuário não autenticado, redirecionando...');
+            window.location.href = 'login.html';
+        } else {
+            console.log('✅ Usuário autenticado:', loggedUser.email);
+        }
+    </script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+
+    <!-- Firebase Config e Services -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+
+    <!-- Script Principal -->
+    <script src="trello-home.js"></script>
+</body>
+</html>

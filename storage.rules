@@ -1,0 +1,44 @@
+rules_version = '2';
+
+// Regras de segurança do Firebase Storage para Florense Project
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Regra para pasta de avatares
+    match /avatars/{userId}/{allPaths=**} {
+      // Permitir leitura para qualquer usuário autenticado
+      allow read: if request.auth != null;
+      
+      // Permitir upload/escrita apenas para o próprio usuário
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId
+                   && request.resource.size < 2 * 1024 * 1024  // Max 2MB
+                   && request.resource.contentType.matches('image/.*'); // Apenas imagens
+    }
+    
+    // Regra para pasta de anexos de cards
+    match /attachments/{allPaths=**} {
+      // Permitir leitura para usuários autenticados
+      allow read: if request.auth != null;
+      
+      // Permitir upload para usuários autenticados
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024; // Max 10MB
+    }
+    
+    // Regra para backgrounds personalizados
+    match /backgrounds/{allPaths=**} {
+      // Permitir leitura para usuários autenticados
+      allow read: if request.auth != null;
+      
+      // Permitir upload para usuários autenticados
+      allow write: if request.auth != null
+                   && request.resource.size < 5 * 1024 * 1024; // Max 5MB
+    }
+    
+    // Negar acesso a qualquer outro caminho por padrão
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

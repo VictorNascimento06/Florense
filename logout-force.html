@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout Forçado - Florense</title>
+</head>
+<body>
+    <h1>🔄 Limpando sessão...</h1>
+    <p>Aguarde...</p>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Config -->
+    <script src="firebase-config.js"></script>
+    
+    <script>
+        console.log('🔄 Fazendo logout forçado...');
+        
+        // Logout do Firebase
+        auth.signOut().then(() => {
+            console.log('✅ Logout do Firebase concluído');
+        }).catch(e => {
+            console.error('Erro no logout Firebase:', e);
+        });
+        
+        // Limpar localStorage
+        localStorage.clear();
+        console.log('✅ localStorage limpo');
+        
+        // Limpar sessionStorage
+        sessionStorage.clear();
+        console.log('✅ sessionStorage limpo');
+        
+        // Redirecionar após 2 segundos
+        setTimeout(() => {
+            console.log('✅ Redirecionando para login...');
+            window.location.href = 'login.html';
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Checklist de Deploy - Florense</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+
+        .checklist-section {
+            margin-bottom: 30px;
+        }
+
+        .checklist-section h2 {
+            color: #0079bf;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd;
+        }
+
+        .checklist-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checklist-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checklist-item.checked {
+            background: #e8f5e9;
+            opacity: 0.7;
+        }
+
+        .checklist-item.checked label {
+            text-decoration: line-through;
+            color: #4caf50;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn {
+            background: #0079bf;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #026aa7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 121, 191, 0.4);
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        label {
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Checklist de Deploy</h1>
+        <p class="subtitle">GitHub Pages - Sistema Florense</p>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill">0%</div>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ Como usar:</strong><br>
+            Marque cada item conforme for completando. Ao finalizar todos, você estará pronto para o deploy!
+        </div>
+
+        <!-- Seção 1 -->
+        <div class="checklist-section">
+            <h2>📋 1. Preparação (Antes do GitHub)</h2>
+            
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item1">
+                <label for="item1">Sistema funcionando 100% localmente (testado com Live Server)</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item2">
+                <label for="item2">Login/Cadastro funcionando</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item3">
+                <label for="item3">Quadros sendo criados e salvos</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item4">
+                <label for="item4">Dashboard abrindo sem erros no console</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item5">
+                <label for="item5">Todos os arquivos CSS e JS estão na pasta</label>
+            </div>
+        </div>
+
+        <!-- Seção 2 -->
+        <div class="checklist-section">
+            <h2>🔐 2. Conta GitHub</h2>
+            
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item6">
+                <label for="item6">Conta criada no GitHub (github.com)</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item7">
+                <label for="item7">Email verificado</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item8">
+                <label for="item8">Perfil configurado (nome, foto opcional)</label>
+            </div>
+        </div>
+
+        <!-- Seção 3 -->
+        <div class="checklist-section">
+            <h2>📁 3. Repositório GitHub</h2>
+            
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item9">
+                <label for="item9">Repositório criado (nome: florense-trello)</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item10">
+                <label for="item10">Configurado como "Public"</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item11">
+                <label for="item11">README.md adicionado</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item12">
+                <label for="item12">Descrição do projeto preenchida</label>
+            </div>
+        </div>
+
+        <!-- Seção 4 -->
+        <div class="checklist-section">
+            <h2>📤 4. Upload dos Arquivos</h2>
+            
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item13">
+                <label for="item13">Todos os arquivos HTML enviados</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item14">
+                <label for="item14">Todos os arquivos CSS enviados</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item15">
+                <label for="item15">Todos os arquivos JS enviados</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item16">
+                <label for="item16">.gitignore criado e enviado</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item17">
+                <label for="item17">README.md atualizado</label>
+            </div>
+        </div>
+
+        <!-- Seção 5 -->
+        <div class="checklist-section">
+            <h2>🚀 5. GitHub Pages</h2>
+            
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item18">
+                <label for="item18">Acessei Settings → Pages</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item19">
+                <label for="item19">Branch "main" selecionada</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item20">
+                <label for="item20">Pasta "/ (root)" selecionada</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item21">
+                <label for="item21">Cliquei em "Save"</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item22">
+                <label for="item22">Aguardei 2-5 minutos</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item23">
+                <label for="item23">URL do site apareceu (https://...github.io/...)</label>
+            </div>
+        </div>
+
+        <!-- Seção 6 -->
+        <div class="checklist-section">
+            <h2>✅ 6. Testes Finais</h2>
+            
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item24">
+                <label for="item24">Site abre pela URL do GitHub Pages</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item25">
+                <label for="item25">CSS carregando corretamente</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item26">
+                <label for="item26">JavaScript funcionando</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item27">
+                <label for="item27">Login funcionando</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item28">
+                <label for="item28">Criar quadros funcionando</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item29">
+                <label for="item29">LocalStorage salvando dados</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item30">
+                <label for="item30">Testado em navegador diferente</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item31">
+                <label for="item31">Testado no celular (responsivo)</label>
+            </div>
+        </div>
+
+        <!-- Seção 7 -->
+        <div class="checklist-section">
+            <h2>📢 7. Compartilhamento</h2>
+            
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item32">
+                <label for="item32">URL salva nos favoritos</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item33">
+                <label for="item33">Link compartilhado com a equipe</label>
+            </div>
+
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <input type="checkbox" id="item34">
+                <label for="item34">Instruções de uso enviadas</label>
+            </div>
+        </div>
+
+        <button class="btn" onclick="resetChecklist()">🔄 Resetar Checklist</button>
+
+        <div class="success-message" id="successMessage">
+            🎉 Parabéns! Todos os itens foram concluídos!<br>
+            Seu site está no ar no GitHub Pages! 🚀
+        </div>
+    </div>
+
+    <script>
+        function toggleCheck(element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                element.classList.add('checked');
+            } else {
+                element.classList.remove('checked');
+            }
+            
+            updateProgress();
+            saveProgress();
+        }
+
+        function updateProgress() {
+            const total = document.querySelectorAll('.checklist-item input[type="checkbox"]').length;
+            const checked = document.querySelectorAll('.checklist-item input[type="checkbox"]:checked').length;
+            const percentage = Math.round((checked / total) * 100);
+            
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage + '%';
+
+            // Mostrar mensagem de sucesso se 100%
+            if (percentage === 100) {
+                document.getElementById('successMessage').classList.add('show');
+            } else {
+                document.getElementById('successMessage').classList.remove('show');
+            }
+        }
+
+        function saveProgress() {
+            const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+            const progress = {};
+            
+            checkboxes.forEach((checkbox, index) => {
+                progress[checkbox.id] = checkbox.checked;
+            });
+            
+            localStorage.setItem('deployChecklist', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('deployChecklist');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                
+                Object.keys(progress).forEach(id => {
+                    const checkbox = document.getElementById(id);
+                    if (checkbox) {
+                        checkbox.checked = progress[id];
+                        if (progress[id]) {
+                            checkbox.closest('.checklist-item').classList.add('checked');
+                        }
+                    }
+                });
+                
+                updateProgress();
+            }
+        }
+
+        function resetChecklist() {
+            if (confirm('Tem certeza que deseja resetar o checklist? Isso vai desmarcar todos os itens.')) {
+                const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    checkbox.closest('.checklist-item').classList.remove('checked');
+                });
+                
+                localStorage.removeItem('deployChecklist');
+                updateProgress();
+            }
+        }
+
+        // Carregar progresso ao abrir a página
+        window.onload = () => {
+            loadProgress();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Florense</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>Painel Administrativo</h1>
+            </div>
+        </div>
+        
+        <div class="nav-right">
+            <div class="admin-info">
+                <i class="fas fa-user-shield"></i>
+                <span id="admin-name">Admin</span>
+            </div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Sair
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="#dashboard" class="menu-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#users" class="menu-item" data-section="users">
+                    <i class="fas fa-users"></i>
+                    <span>Usuários</span>
+                </a>
+                <a href="#access-log" class="menu-item" data-section="access-log">
+                    <i class="fas fa-history"></i>
+                    <span>Histórico de Acessos</span>
+                </a>
+                <a href="#boards" class="menu-item" data-section="boards">
+                    <i class="fas fa-th-large"></i>
+                    <span>Quadros</span>
+                </a>
+                <a href="#workspaces" class="menu-item" data-section="workspaces">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Espaços de Trabalho</span>
+                </a>
+                <a href="#settings" class="menu-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <h2>Dashboard</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-users">0</h3>
+                            <p>Total de Usuários</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-th-large"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-boards">0</h3>
+                            <p>Total de Quadros</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-workspaces">0</h3>
+                            <p>Espaços de Trabalho</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="total-logins">0</h3>
+                            <p>Total de Acessos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Usuários Recentes</h3>
+                        <div id="recent-users-list" class="list-container"></div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <h3>Últimos Acessos</h3>
+                        <div id="recent-access-list" class="list-container"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users" class="section">
+                <div class="section-header">
+                    <h2>Gerenciar Usuários</h2>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="user-search" placeholder="Buscar usuários...">
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>E-mail</th>
+                                <th>Senha</th>
+                                <th>Data de Criação</th>
+                                <th>Último Acesso</th>
+                                <th>Quadros</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Access Log Section -->
+            <section id="access-log" class="section">
+                <div class="section-header">
+                    <h2>Histórico de Acessos</h2>
+                    <div class="filter-controls">
+                        <select id="access-filter">
+                            <option value="all">Todos</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                        </select>
+                        <input type="date" id="access-date-filter">
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Usuário</th>
+                                <th>E-mail</th>
+                                <th>Ação</th>
+                                <th>IP/Navegador</th>
+                            </tr>
+                        </thead>
+                        <tbody id="access-log-table-body">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Boards Section -->
+            <section id="boards" class="section">
+                <div class="section-header">
+                    <h2>Todos os Quadros</h2>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="board-search" placeholder="Buscar quadros...">
+                    </div>
+                </div>
+                
+                <div class="boards-grid" id="all-boards-grid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Workspaces Section -->
+            <section id="workspaces" class="section">
+                <div class="section-header">
+                    <h2>Espaços de Trabalho</h2>
+                </div>
+                
+                <div class="workspaces-list" id="workspaces-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="section">
+                <h2>Configurações do Sistema</h2>
+                
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-database"></i>
+                            <h3>Gerenciar Dados</h3>
+                        </div>
+                        <div class="setting-body">
+                            <button class="btn btn-warning" onclick="exportData()">
+                                <i class="fas fa-download"></i>
+                                Exportar Dados
+                            </button>
+                            <button class="btn btn-danger" onclick="clearAllData()">
+                                <i class="fas fa-trash"></i>
+                                Limpar Todos os Dados
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Segurança</h3>
+                        </div>
+                        <div class="setting-body">
+                            <button class="btn btn-primary" onclick="changeAdminPassword()">
+                                <i class="fas fa-key"></i>
+                                Alterar Senha do Admin
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-chart-bar"></i>
+                            <h3>Estatísticas</h3>
+                        </div>
+                        <div class="setting-body">
+                            <div class="stat-item">
+                                <span>Armazenamento Usado:</span>
+                                <strong id="storage-used">0 KB</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Último Backup:</span>
+                                <strong id="last-backup">Nunca</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Config & Services -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+    
+    <!-- Admin Script -->
+    <script src="admin.js"></script>
+</body>
+</html>

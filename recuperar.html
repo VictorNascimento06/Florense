@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperar conta!</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:400,600&display=swap">
+    <style>
+body {
+    min-height: 100vh;
+    background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+}
+.split-container {
+    display: flex;
+    width: 720px;
+    height: 420px;
+    border-radius: 36px;
+    box-shadow: 0 0 30px rgba(0,0,0,.15);
+    overflow: hidden;
+    background: #fff;
+}
+.split-left {
+    width: 50%;
+    background: #000;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.split-left h1 {
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+.split-right {
+    width: 50%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.recuperar-container {
+    width: 90%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.recuperar-container h2 {
+    font-size: 26px;
+    margin-bottom: 18px;
+    color: #232323;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+#recuperar-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+#recuperar-form label {
+    display: block;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+#recuperar-form input[type="email"] {
+    display: block;         /* Garante bloco para margin trabalhar */
+    margin: 0 auto;         /* Centraliza horizontalmente */
+    width: 90%;             /* Opcional: ajuste para não ficar colado na borda */
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #e1e6ef;
+    font-size: 15px;
+    background: #f9fafe;
+    transition: border 0.2s;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+#recuperar-form input[type="email"]:focus {
+    border: 1.5px solid #7494ec;
+    outline: none;
+    background: #fff;
+}
+#recuperar-form button[type="submit"] {
+    width: 100%;
+    padding: 12px 0;
+    background: transparent;
+    color: #222; /* Preto escuro */
+    border: 2px solid #222; /* Ou use #000 para preto puro */
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.3s, color 0.2s, border 0.2s;
+}
+#recuperar-form button[type="submit"]:hover {
+    background: #222;
+    color: #fff;
+    border: 2px solid #222;
+    transform: scale(1.03);
+}
+#sucesso-container {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+}
+#sucesso-container button {
+    width: 100%;
+    padding: 12px 0;
+    background: #000;         /* Cor sólida preta */
+    color: #fff;              /* Texto branco */
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.3s, transform 0.2s;
+}
+#sucesso-container button:hover {
+    background: #222;         /* Preto um pouco mais claro no hover, se desejar */
+    color: #fff;
+    transform: scale(1.03);
+}
+.fade-out {
+    animation: fadeOut 0.6s forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+}
+@media (max-width: 700px) {
+    .split-container {
+        flex-direction: column;
+        width: 95vw;
+        height: auto;
+        min-height: 410px;
+    }
+    .split-left, .split-right {
+        width: 100%;
+        height: 200px;
+    }
+    .recuperar-container {
+        max-width: 95vw;
+    }
+}
+</style>
+</head>
+<body>
+    <div class="split-container">
+        <div class="split-left">
+            <div>
+                <h1>FLORENSE PROJETOS</h1>
+                <p style="text-align:center; margin:20px 0 0 0; font-size:16px;">Acesse ou recupere sua conta para continuar.</p>
+            </div>
+        </div>
+        <div class="split-right">
+            <div class="recuperar-container" id="recuperar-container">
+                <h2>Recuperar Conta</h2>
+                <form id="recuperar-form">
+                    <label for="email">Digite seu e-mail cadastrado:</label>
+                    <input type="email" id="email" required>
+                    <button type="submit">Enviar</button>
+                </form>
+            </div>
+
+            <div class="recuperar-container" id="sucesso-container" style="display:none;">
+                <h2>E-mail enviado!</h2>
+                <p>Verifique sua caixa de entrada para recuperar sua conta.</p>
+                <button id="voltar-login-btn">Voltar para o login</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+      (function(){
+        emailjs.init("gGsfNIBCARSwjrLOk");
+      })();
+
+      document.getElementById('recuperar-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        const user = users.find(u => u.email === email);
+        if (!user) {
+          alert('E-mail não cadastrado!');
+          return;
+        }
+        emailjs.send("service_8p4opzm", "template_f8x7yjo", {
+          email: user.email,
+          usuario: user.username,
+          senha: user.password
+        })
+        .then(function() {
+          document.getElementById('recuperar-container').style.display = 'none';
+          document.getElementById('sucesso-container').style.display = 'flex';
+        })
+        .catch(function(error) {
+          alert('Erro ao enviar e-mail: ' + error.text);
+        });
+      });
+
+      document.getElementById('voltar-login-btn').onclick = function() {
+    const container = document.querySelector('.split-container');
+    container.classList.add('fade-out');
+    setTimeout(function() {
+        window.location.href = 'login.html';
+    }, 600); // tempo igual ao da animação
+};
+    </script>
+</body>
+</html>

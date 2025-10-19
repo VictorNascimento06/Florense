@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ RESETAR SISTEMA - Florense</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            max-width: 700px;
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .warning-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .warning-box ul {
+            color: #856404;
+            margin-left: 20px;
+        }
+
+        .warning-box li {
+            margin: 8px 0;
+        }
+
+        .danger-box {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .danger-box h3 {
+            color: #721c24;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .danger-box p {
+            color: #721c24;
+            line-height: 1.6;
+        }
+
+        .safe-box {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .safe-box h3 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .safe-box p {
+            color: #155724;
+        }
+
+        .confirmation {
+            margin: 30px 0;
+        }
+
+        .confirmation label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s;
+        }
+
+        .confirmation label:hover {
+            border-color: #dc3545;
+            background: #fff;
+        }
+
+        .confirmation input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 18px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-reset:hover:not(:disabled) {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-reset:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-cancel {
+            width: 100%;
+            padding: 18px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        #message {
+            margin-top: 20px;
+        }
+
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+
+        .progress {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #dc3545;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .check {
+            color: #28a745;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>⚠️</span>
+                <span>RESETAR SISTEMA</span>
+                <span>⚠️</span>
+            </h1>
+            <p>Exclusão permanente de dados do sistema</p>
+        </div>
+
+        <div class="content">
+            <div class="danger-box">
+                <h3>🚨 ATENÇÃO: AÇÃO IRREVERSÍVEL!</h3>
+                <p>
+                    Esta ação vai <strong>DELETAR PERMANENTEMENTE</strong> todos os dados do sistema.
+                    <br><br>
+                    <strong>NÃO HÁ COMO DESFAZER!</strong>
+                </p>
+            </div>
+
+            <div class="warning-box">
+                <h3>📋 O que será deletado:</h3>
+                <ul>
+                    <li>✅ Todos os usuários (exceto administradores)</li>
+                    <li>✅ Todos os workspaces</li>
+                    <li>✅ Todos os quadros (boards)</li>
+                    <li>✅ Todos os cartões (cards)</li>
+                    <li>✅ Histórico de acessos</li>
+                    <li>✅ Arquivos do Storage</li>
+                </ul>
+            </div>
+
+            <div class="safe-box">
+                <h3>🛡️ O que será preservado:</h3>
+                <p>
+                    ✅ Usuários com <strong>isAdmin = true</strong> serão mantidos<br>
+                    ✅ Sistema voltará ao estado inicial (apenas admins)
+                </p>
+            </div>
+
+            <div class="confirmation">
+                <label>
+                    <input type="checkbox" id="confirmCheckbox">
+                    <span>
+                        <strong>Eu entendo que esta ação é PERMANENTE e IRREVERSÍVEL.</strong>
+                        <br>
+                        Confirmo que quero deletar todos os dados (exceto admins).
+                    </span>
+                </label>
+            </div>
+
+            <button class="btn-reset" id="resetBtn" disabled>
+                🗑️ RESETAR SISTEMA AGORA
+            </button>
+
+            <a href="admin.html" class="btn-cancel">
+                ← Cancelar e Voltar
+            </a>
+
+            <div class="progress" id="progress"></div>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- Config -->
+    <script src="firebase-config.js"></script>
+
+    <script>
+        const confirmCheckbox = document.getElementById('confirmCheckbox');
+        const resetBtn = document.getElementById('resetBtn');
+        const messageDiv = document.getElementById('message');
+        const progressDiv = document.getElementById('progress');
+
+        // Habilitar botão apenas se checkbox marcado
+        confirmCheckbox.addEventListener('change', () => {
+            resetBtn.disabled = !confirmCheckbox.checked;
+        });
+
+        // Função para adicionar item de progresso
+        function addProgress(text, status = 'loading') {
+            const item = document.createElement('div');
+            item.className = 'progress-item';
+            item.innerHTML = status === 'loading' 
+                ? `<div class="spinner"></div><span>${text}</span>`
+                : `<span class="check">✓</span><span>${text}</span>`;
+            progressDiv.appendChild(item);
+            return item;
+        }
+
+        // Função principal de reset
+        resetBtn.addEventListener('click', async () => {
+            if (!confirm('⚠️ ÚLTIMA CONFIRMAÇÃO!\n\nTem CERTEZA ABSOLUTA que deseja DELETAR TUDO?\n\nDigite OK para confirmar.')) {
+                return;
+            }
+
+            resetBtn.disabled = true;
+            confirmCheckbox.disabled = true;
+            progressDiv.style.display = 'block';
+            progressDiv.innerHTML = '';
+            messageDiv.innerHTML = '';
+
+            try {
+                console.log('🔄 Iniciando reset do sistema...');
+
+                // Verificar se está logado
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    throw new Error('Você precisa estar logado como admin!');
+                }
+
+                // Verificar se é admin
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                if (!userDoc.exists || !userDoc.data().isAdmin) {
+                    throw new Error('Apenas administradores podem resetar o sistema!');
+                }
+
+                let totalDeleted = 0;
+
+                // 1. Deletar CARDS
+                const step1 = addProgress('Deletando cartões...', 'loading');
+                const cardsSnapshot = await db.collection('cards').get();
+                for (const doc of cardsSnapshot.docs) {
+                    await doc.ref.delete();
+                    totalDeleted++;
+                }
+                step1.innerHTML = `<span class="check">✓</span><span>Deletados ${cardsSnapshot.size} cartões</span>`;
+
+                // 2. Deletar BOARDS
+                const step2 = addProgress('Deletando quadros...', 'loading');
+                const boardsSnapshot = await db.collection('boards').get();
+                for (const doc of boardsSnapshot.docs) {
+                    await doc.ref.delete();
+                    totalDeleted++;
+                }
+                step2.innerHTML = `<span class="check">✓</span><span>Deletados ${boardsSnapshot.size} quadros</span>`;
+
+                // 3. Deletar WORKSPACES
+                const step3 = addProgress('Deletando workspaces...', 'loading');
+                const workspacesSnapshot = await db.collection('workspaces').get();
+                for (const doc of workspacesSnapshot.docs) {
+                    await doc.ref.delete();
+                    totalDeleted++;
+                }
+                step3.innerHTML = `<span class="check">✓</span><span>Deletados ${workspacesSnapshot.size} workspaces</span>`;
+
+                // 4. Deletar USER ACCESS
+                const step4 = addProgress('Deletando histórico de acessos...', 'loading');
+                const accessSnapshot = await db.collection('userAccess').get();
+                for (const doc of accessSnapshot.docs) {
+                    await doc.ref.delete();
+                    totalDeleted++;
+                }
+                step4.innerHTML = `<span class="check">✓</span><span>Deletados ${accessSnapshot.size} registros de acesso</span>`;
+
+                // 5. Deletar USUÁRIOS (EXCETO ADMINS!)
+                const step5 = addProgress('Deletando usuários (exceto admins)...', 'loading');
+                const usersSnapshot = await db.collection('users').get();
+                let deletedUsers = 0;
+                let keptAdmins = 0;
+
+                for (const doc of usersSnapshot.docs) {
+                    const userData = doc.data();
+                    
+                    // NÃO deletar se for admin
+                    if (userData.isAdmin === true) {
+                        console.log('🛡️ Admin preservado:', userData.username || userData.email);
+                        keptAdmins++;
+                        continue;
+                    }
+
+                    // Deletar usuário do Firestore
+                    await doc.ref.delete();
+                    deletedUsers++;
+                    totalDeleted++;
+
+                    // Tentar deletar do Authentication (pode falhar se não for o usuário atual)
+                    try {
+                        // Nota: Só é possível deletar o próprio usuário do Auth via cliente
+                        // Para deletar outros, seria necessário usar Admin SDK no backend
+                        console.log('⚠️ Usuário removido do Firestore:', userData.email);
+                    } catch (error) {
+                        console.warn('Não foi possível remover do Authentication:', error);
+                    }
+                }
+                step5.innerHTML = `<span class="check">✓</span><span>Deletados ${deletedUsers} usuários | Mantidos ${keptAdmins} admins</span>`;
+
+                // 6. Limpar Storage (opcional - pode demorar)
+                const step6 = addProgress('Limpando arquivos do Storage...', 'loading');
+                try {
+                    const storageRef = storage.ref();
+                    const folders = ['avatars', 'attachments', 'backgrounds'];
+                    let deletedFiles = 0;
+
+                    for (const folder of folders) {
+                        const listResult = await storageRef.child(folder).listAll();
+                        for (const item of listResult.items) {
+                            await item.delete();
+                            deletedFiles++;
+                        }
+                    }
+                    step6.innerHTML = `<span class="check">✓</span><span>Deletados ${deletedFiles} arquivos do Storage</span>`;
+                } catch (error) {
+                    step6.innerHTML = `<span class="check">✓</span><span>Storage limpo (alguns arquivos podem ter falhado)</span>`;
+                    console.warn('Erro ao limpar storage:', error);
+                }
+
+                // Sucesso!
+                messageDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Sistema resetado com sucesso!</h3>
+                        <p><strong>Total de itens deletados:</strong> ${totalDeleted}</p>
+                        <p><strong>Admins preservados:</strong> ${keptAdmins}</p>
+                        <br>
+                        <p>O sistema foi restaurado ao estado inicial.</p>
+                        <br>
+                        <a href="admin.html" style="color: #155724; font-weight: bold;">➡️ Voltar para o Painel Admin</a>
+                    </div>
+                `;
+
+                console.log('✅ Reset completo!');
+
+            } catch (error) {
+                console.error('❌ Erro ao resetar sistema:', error);
+                messageDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erro ao resetar sistema</h3>
+                        <p><strong>Erro:</strong> ${error.message}</p>
+                        <p>Alguns dados podem ter sido deletados parcialmente.</p>
+                    </div>
+                `;
+                resetBtn.disabled = false;
+                confirmCheckbox.disabled = false;
+            }
+        });
+
+        // Verificar autenticação ao carregar
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                messageDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Não autenticado</strong><br>
+                        Você precisa estar logado como admin para acessar esta página.<br><br>
+                        <a href="login.html" style="color: #721c24; font-weight: bold;">➡️ Fazer Login</a>
+                    </div>
+                `;
+                resetBtn.disabled = true;
+                confirmCheckbox.disabled = true;
+            } else {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists || !userDoc.data().isAdmin) {
+                    messageDiv.innerHTML = `
+                        <div class="error">
+                            <strong>⛔ Acesso Negado</strong><br>
+                            Apenas administradores podem resetar o sistema.<br><br>
+                            <a href="trello-home.html" style="color: #721c24; font-weight: bold;">➡️ Voltar</a>
+                        </div>
+                    `;
+                    resetBtn.disabled = true;
+                    confirmCheckbox.disabled = true;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
