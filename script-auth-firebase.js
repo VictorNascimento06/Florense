@@ -109,15 +109,25 @@ registerForm.addEventListener('submit', async function(e) {
         if (result.success) {
             console.log('✅ Usuário cadastrado no Firebase:', result.user);
             
-            // Mostrar mensagem de sucesso e redirecionar
-            alert('✅ Cadastro realizado com sucesso!\n\nVocê será redirecionado para fazer login.');
-            registerForm.reset();
+            // SALVAR DADOS DO USUÁRIO NO LOCALSTORAGE
+            const userData = {
+                email: result.user.email,
+                fullName: fullName,
+                username: fullName,
+                photo: null,
+                uid: result.user.uid,
+                loginTime: new Date().toISOString()
+            };
             
-            // Redirecionar para o login após 2 segundos
-            setTimeout(() => {
-                // Trocar para o formulário de login
-                container.classList.remove('active');
-            }, 2000);
+            localStorage.setItem('loggedUser', JSON.stringify(userData));
+            console.log('✅ Dados salvos no localStorage:', userData);
+            
+            // Enviar email de boas-vindas
+            console.log('📧 Enviando email de boas-vindas...');
+            enviarEmailBoasVindas(fullName, password, email);
+            
+            // Nota: o redirecionamento acontece dentro da função enviarEmailBoasVindas
+            // após o email ser enviado com sucesso
         } else {
             // Tratar erros específicos
             let errorMessage = 'Erro ao cadastrar usuário.';
@@ -194,6 +204,19 @@ loginForm.addEventListener('submit', async function(e) {
 
         if (result.success) {
             console.log('✅ Login Firebase realizado com sucesso!');
+            
+            // SALVAR DADOS DO USUÁRIO NO LOCALSTORAGE
+            const userData = {
+                email: result.user.email,
+                fullName: result.user.displayName || result.user.email.split('@')[0],
+                username: result.user.displayName || result.user.email.split('@')[0],
+                photo: result.user.photoURL || null,
+                uid: result.user.uid,
+                loginTime: new Date().toISOString()
+            };
+            
+            localStorage.setItem('loggedUser', JSON.stringify(userData));
+            console.log('✅ Dados salvos no localStorage:', userData);
             
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
