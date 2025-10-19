@@ -3309,7 +3309,7 @@ function closeShareModal() {
     }
 }
 
-function addMemberToBoard() {
+async function addMemberToBoard() {
     const emailInput = document.getElementById('share-email');
     const email = emailInput.value.trim();
     
@@ -3328,64 +3328,56 @@ function addMemberToBoard() {
         return;
     }
     
-    // Verificar se o usuário já está na lista de membros
-    if (!currentBoard.sharedWith) {
-        currentBoard.sharedWith = [];
+    // USAR FIREBASE PARA COMPARTILHAR
+    if (window.firebaseService && firebase.auth().currentUser) {
+        try {
+            showNotification('Compartilhando quadro...', 'info');
+            
+            const result = await window.firebaseService.shareBoardWithUser(currentBoard.id, email);
+            
+            if (result.success) {
+                // Atualizar lista local
+                if (!currentBoard.sharedWith) {
+                    currentBoard.sharedWith = [];
+                }
+                if (!currentBoard.sharedWith.includes(email)) {
+                    currentBoard.sharedWith.push(email);
+                }
+                
+                // Adicionar membro à lista visual
+                const membersList = document.getElementById('shared-members-list');
+                const initial = email[0].toUpperCase();
+                
+                const memberHTML = `
+                    <div class="shared-member" data-email="${email}">
+                        <div class="member-avatar">
+                            <span>${initial}</span>
+                        </div>
+                        <div class="member-info">
+                            <strong>${email}</strong>
+                            <span class="member-role">Pode editar</span>
+                        </div>
+                        <button class="btn-remove-member" onclick="removeMemberFromBoard('${email}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                membersList.insertAdjacentHTML('beforeend', memberHTML);
+                emailInput.value = '';
+                
+                showNotification('Quadro compartilhado com sucesso!', 'success');
+            } else {
+                showNotification(result.error || 'Erro ao compartilhar quadro', 'error');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao compartilhar:', error);
+            showNotification('Erro ao compartilhar quadro', 'error');
+        }
+    } else {
+        // FALLBACK PARA LOCALSTORAGE (não funciona entre navegadores)
+        showNotification('Compartilhamento requer Firebase ativo', 'warning');
     }
-    
-    if (currentBoard.sharedWith.includes(email)) {
-        showNotification('Este usuário já tem acesso ao quadro', 'warning');
-        return;
-    }
-    
-    // Adicionar email à lista de compartilhamento do quadro
-    currentBoard.sharedWith.push(email);
-    
-    // Salvar informações do proprietário no quadro
-    const currentUser = JSON.parse(localStorage.getItem('loggedUser'));
-    if (!currentBoard.owner) {
-        currentBoard.owner = currentUser.email;
-    }
-    
-    // Adicionar quadro ao localStorage do usuário compartilhado
-    const sharedBoardKey = `boards_${email}`;
-    let sharedUserBoards = JSON.parse(localStorage.getItem(sharedBoardKey)) || [];
-    
-    // Verificar se o quadro já existe na lista do usuário compartilhado
-    const existingBoardIndex = sharedUserBoards.findIndex(b => b.id === currentBoard.id);
-    
-    if (existingBoardIndex === -1) {
-        // Adicionar quadro compartilhado
-        sharedUserBoards.push(currentBoard);
-        localStorage.setItem(sharedBoardKey, JSON.stringify(sharedUserBoards));
-    }
-    
-    // Salvar alterações no quadro atual
-    saveBoards();
-    
-    // Adicionar membro à lista visual
-    const membersList = document.getElementById('shared-members-list');
-    const initial = email[0].toUpperCase();
-    
-    const memberHTML = `
-        <div class="shared-member" data-email="${email}">
-            <div class="member-avatar">
-                <span>${initial}</span>
-            </div>
-            <div class="member-info">
-                <strong>${email}</strong>
-                <span class="member-role">Pode editar</span>
-            </div>
-            <button class="btn-remove-member" onclick="removeMemberFromBoard('${email}')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-    membersList.insertAdjacentHTML('beforeend', memberHTML);
-    emailInput.value = '';
-    
-    showNotification(`✅ ${email} agora tem acesso ao quadro!`, 'success');
 }
 
 function removeMemberFromBoard(email) {
