@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=login.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Florense - Redirecionando...</title>
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .loader {
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        a {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+        <h2>🏢 Redirecionando para Florense...</h2>
+        <p>Se não redirecionar automaticamente, <a href="login.html">clique aqui</a></p>
+    </div>
+    
+    <script>
+        // Redirecionar imediatamente para o login
+        window.location.href = 'login.html';
+    </script>
+</body>
+</html>
+    <!-- Header/Navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="logo">
+                <h2>Florense</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Início</a></li>
+                <li><a href="#about" class="nav-link">Sobre</a></li>
+                <li><a href="#services" class="nav-link">Serviços</a></li>
+                <li><a href="#contact" class="nav-link">Contato</a></li>
+            </ul>
+            <div class="auth-buttons">
+                <a href="login.html" class="btn-login">Entrar</a>
+                <a href="trello-home.html" class="btn-dashboard">Dashboard</a>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Bem-vindo à <span>Florense</span></h1>
+            <p class="hero-description">
+                Transformando ideias em realidade com soluções inovadoras e design excepcional.
+                Gerencie seus projetos de forma eficiente e profissional.
+            </p>
+            <div class="hero-buttons">
+                <a href="login.html" class="btn btn-primary">Começar Agora</a>
+                <a href="#about" class="btn btn-secondary">Saiba Mais</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-card">
+                <i class='bx bx-rocket'></i>
+                <h3>Projetos Inovadores</h3>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">Sobre a Florense</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Nossa Missão</h3>
+                    <p>Somos uma empresa dedicada a fornecer soluções completas de gerenciamento de projetos, 
+                    combinando tecnologia avançada com um design intuitivo para maximizar a produtividade de nossos clientes.</p>
+                    <div class="features">
+                        <div class="feature">
+                            <i class='bx bx-check-circle'></i>
+                            <span>Gerenciamento Eficiente</span>
+                        </div>
+                        <div class="feature">
+                            <i class='bx bx-check-circle'></i>
+                            <span>Interface Intuitiva</span>
+                        </div>
+                        <div class="feature">
+                            <i class='bx bx-check-circle'></i>
+                            <span>Suporte 24/7</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-stats">
+                    <div class="stat">
+                        <h4>500+</h4>
+                        <p>Projetos Concluídos</p>
+                    </div>
+                    <div class="stat">
+                        <h4>100+</h4>
+                        <p>Clientes Satisfeitos</p>
+                    </div>
+                    <div class="stat">
+                        <h4>24/7</h4>
+                        <p>Suporte Disponível</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <h2 class="section-title">Nossos Serviços</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <i class='bx bx-task'></i>
+                    <h3>Gerenciamento de Tarefas</h3>
+                    <p>Organize e acompanhe todas as suas tarefas de forma eficiente com nosso sistema Kanban integrado.</p>
+                </div>
+                <div class="service-card">
+                    <i class='bx bx-group'></i>
+                    <h3>Colaboração em Equipe</h3>
+                    <p>Facilite a comunicação e colaboração entre membros da equipe em tempo real.</p>
+                </div>
+                <div class="service-card">
+                    <i class='bx bx-bar-chart-alt-2'></i>
+                    <h3>Relatórios e Analytics</h3>
+                    <p>Obtenha insights valiosos sobre o progresso dos projetos com relatórios detalhados.</p>
+                </div>
+                <div class="service-card">
+                    <i class='bx bx-time-five'></i>
+                    <h3>Controle de Tempo</h3>
+                    <p>Monitore o tempo gasto em cada projeto e otimize a produtividade da sua equipe.</p>
+                </div>
+                <div class="service-card">
+                    <i class='bx bx-mobile-alt'></i>
+                    <h3>Acesso Mobile</h3>
+                    <p>Acesse seus projetos em qualquer lugar com nossa plataforma responsiva.</p>
+                </div>
+                <div class="service-card">
+                    <i class='bx bx-shield-check'></i>
+                    <h3>Segurança Avançada</h3>
+                    <p>Proteja seus dados com criptografia de ponta e backups automáticos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Entre em Contato</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Fale Conosco</h3>
+                    <p>Estamos aqui para ajudar você a transformar seus projetos em realidade.</p>
+                    <div class="contact-item">
+                        <i class='bx bx-phone'></i>
+                        <span>(11) 9999-9999</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class='bx bx-envelope'></i>
+                        <span>contato@florense.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class='bx bx-map'></i>
+                        <span>São Paulo, SP - Brasil</span>
+                    </div>
+                </div>
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="Seu Nome" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Seu E-mail" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Sua Mensagem" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar Mensagem</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Florense</h3>
+                    <p>Transformando ideias em realidade com soluções inovadoras.</p>
+                    <div class="social-links">
+                        <a href="#"><i class='bx bxl-facebook'></i></a>
+                        <a href="#"><i class='bx bxl-twitter'></i></a>
+                        <a href="#"><i class='bx bxl-linkedin'></i></a>
+                        <a href="#"><i class='bx bxl-instagram'></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="#home">Início</a></li>
+                        <li><a href="#about">Sobre</a></li>
+                        <li><a href="#services">Serviços</a></li>
+                        <li><a href="#contact">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Serviços</h4>
+                    <ul>
+                        <li><a href="#">Gerenciamento de Projetos</a></li>
+                        <li><a href="#">Colaboração em Equipe</a></li>
+                        <li><a href="#">Relatórios</a></li>
+                        <li><a href="#">Suporte</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contato</h4>
+                    <p>contato@florense.com</p>
+                    <p>(11) 9999-9999</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Florense. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="home.js"></script>
+</body>
+</html>
