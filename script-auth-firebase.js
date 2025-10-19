@@ -44,49 +44,44 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 // ============================================
-// FUNÇÃO: ENVIAR EMAIL DE BOAS-VINDAS
+// FUNÇÃO: ENVIAR EMAIL DE BOAS-VINDAS COM FORMSPREE
 // ============================================
 function enviarEmailBoasVindas(username, password, email) {
-    console.log('📧 Preparando envio de email...');
+    console.log('📧 Preparando envio de email via Formspree...');
     console.log('📊 Dados:', { username, email });
     
-    // Verificar se EmailJS está carregado
-    if (typeof emailjs === 'undefined') {
-        console.error('❌ EmailJS não está carregado!');
-        alert(`✅ Cadastro realizado com sucesso!\n\n👤 Nome: ${username}\n📧 Email: ${email}\n🔑 Senha: ${password}\n\n⚠️ IMPORTANTE: Anote suas credenciais!`);
-        window.location.href = "trello-home.html";
-        return;
-    }
-    
-    const templateParams = {
-        to_name: username,
-        user_password: password,
-        to_email: email,
+    // Dados do email
+    const emailData = {
         email: email,
-        usuario: username,
-        senha: password
+        message: `Olá ${username}!\n\nSeu cadastro no Sistema Florense foi realizado com sucesso!\n\n👤 Nome: ${username}\n📧 Email: ${email}\n🔑 Senha: ${password}\n\nGuarde essas informações em um local seguro.\n\nBem-vindo(a) ao Sistema Florense!\n\nAcesse: https://victornascimento06.github.io/Florense/`
     };
 
-    console.log('📤 Enviando email com params:', templateParams);
+    console.log('📤 Enviando email via Formspree...');
 
-    emailjs.send('service_k6cc75i', 'template_ovrpc2h', templateParams)
-        .then(function(response) {
-            console.log('✅ Email enviado com sucesso!');
-            console.log('📊 Response:', response.status, response.text);
+    // Enviar via Formspree
+    fetch('https://formspree.io/f/mblzbyrc', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(emailData)
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('✅ Email enviado com sucesso via Formspree!');
             alert('✅ Cadastro realizado com sucesso!\n\n📧 Verifique seu e-mail para as credenciais de acesso.');
             window.location.href = "trello-home.html";
-        })
-        .catch(function(error) {
-            console.error('❌ ERRO DETALHADO ao enviar email:');
-            console.error('Tipo:', error.name);
-            console.error('Mensagem:', error.text || error.message);
-            console.error('Status:', error.status);
-            console.error('Objeto completo:', error);
-            
-            // FALLBACK: Mostrar credenciais na tela
-            alert(`✅ Cadastro realizado com sucesso!\n\n⚠️ O email não pôde ser enviado.\n\n👤 Nome: ${username}\n📧 Email: ${email}\n🔑 Senha: ${password}\n\n⚠️ ANOTE SUAS CREDENCIAIS!\n\nVocê será redirecionado...`);
-            window.location.href = "trello-home.html";
-        });
+        } else {
+            throw new Error('Erro ao enviar email');
+        }
+    })
+    .catch(error => {
+        console.error('❌ ERRO ao enviar email via Formspree:', error);
+        
+        // FALLBACK: Mostrar credenciais na tela
+        alert(`✅ Cadastro realizado com sucesso!\n\n⚠️ O email não pôde ser enviado.\n\n👤 Nome: ${username}\n📧 Email: ${email}\n🔑 Senha: ${password}\n\n⚠️ ANOTE SUAS CREDENCIAIS!\n\nVocê será redirecionado...`);
+        window.location.href = "trello-home.html";
+    });
 }
 
 // ============================================
