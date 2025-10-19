@@ -61,12 +61,15 @@ function enviarEmailBoasVindas(username, password, email) {
     const templateParams = {
         to_name: username,
         user_password: password,
-        to_email: email
+        to_email: email,
+        email: email,
+        usuario: username,
+        senha: password
     };
 
     console.log('📤 Enviando email com params:', templateParams);
 
-    emailjs.send('service_8p4opzm', 'template_k4q0kfq', templateParams)
+    emailjs.send('service_8p4opzm', 'template_ovrpc2h', templateParams)
         .then(function(response) {
             console.log('✅ Email enviado com sucesso!');
             console.log('📊 Response:', response.status, response.text);
