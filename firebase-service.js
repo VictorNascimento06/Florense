@@ -789,6 +789,68 @@ auth.onAuthStateChanged((user) => {
 });
 
 /**
+ * Salvar board completo do localStorage para o Firebase
+ */
+async function saveBoardToFirestore(boardData) {
+    try {
+        const user = getCurrentUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        // Preparar dados do board para o Firestore
+        const firestoreBoard = {
+            name: boardData.name || 'Sem título',
+            background: boardData.background || 'default',
+            backgroundColor: boardData.backgroundColor || '#0079bf',
+            backgroundImage: boardData.backgroundImage || null,
+            ownerId: user.uid,
+            ownerEmail: user.email,
+            members: [user.uid],
+            sharedWith: [],
+            starred: boardData.starred || false,
+            lists: boardData.lists || [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastViewed: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Salvar no Firestore
+        const boardRef = await db.collection('boards').add(firestoreBoard);
+
+        console.log('✅ Board migrado para Firebase:', boardRef.id);
+        return { success: true, boardId: boardRef.id, board: firestoreBoard };
+    } catch (error) {
+        console.error('❌ Erro ao salvar board no Firebase:', error);
+        return { success: false, error: error };
+    }
+}
+
+/**
+ * Migrar todos os boards do localStorage para o Firebase
+ */
+async function migrateLocalBoardsToFirebase(localBoards) {
+    try {
+        const user = getCurrentUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        console.log(`🔄 Migrando ${localBoards.length} board(s) para o Firebase...`);
+        
+        const results = [];
+        for (const board of localBoards) {
+            const result = await saveBoardToFirestore(board);
+            results.push({ oldId: board.id, ...result });
+        }
+
+        const successCount = results.filter(r => r.success).length;
+        console.log(`✅ ${successCount}/${localBoards.length} board(s) migrado(s) com sucesso!`);
+
+        return { success: true, results: results };
+    } catch (error) {
+        console.error('❌ Erro na migração:', error);
+        return { success: false, error: error };
+    }
+}
+
+/**
  * Compartilhar board com outro usuário (por email)
  */
 async function shareBoardWithUser(boardId, userEmail) {
@@ -935,6 +997,8 @@ window.firebaseService = {
     getUserBoards,
     shareBoardWithUser,
     removeBoardAccess,
+    saveBoardToFirestore,
+    migrateLocalBoardsToFirebase,
     
     // Lists
     addList,
