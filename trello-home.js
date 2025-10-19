@@ -533,8 +533,29 @@ function getBoardBackground(background) {
 // ============================================
 // BOARDS MANAGEMENT
 // ============================================
-function loadBoards() {
-    // VOLTAR PARA LOCALSTORAGE TEMPORARIAMENTE
+async function loadBoards() {
+    // TENTAR CARREGAR DO FIREBASE PRIMEIRO
+    if (window.firebaseService && firebase.auth().currentUser) {
+        try {
+            console.log('🔄 Carregando boards do Firebase...');
+            const result = await window.firebaseService.getUserBoards();
+            
+            if (result.success && result.boards.length > 0) {
+                boards = result.boards;
+                console.log(`✅ ${boards.length} board(s) carregado(s) do Firebase`);
+                
+                renderRecentBoards();
+                renderWorkspaceBoards();
+                renderSharedBoards();
+                return;
+            }
+        } catch (error) {
+            console.warn('⚠️ Erro ao carregar do Firebase:', error);
+        }
+    }
+    
+    // FALLBACK PARA LOCALSTORAGE
+    console.log('📂 Carregando boards do localStorage...');
     boards = getBoards();
     
     // Se não houver boards, criar alguns de exemplo
@@ -638,8 +659,13 @@ function renderSharedBoards() {
     const currentUser = JSON.parse(localStorage.getItem('loggedUser'));
     if (!currentUser) return;
     
-    // Filtrar quadros compartilhados (onde o usuário não é o owner)
+    // Filtrar quadros compartilhados (onde isOwner === false)
     const sharedBoards = boards.filter(board => {
+        // No Firebase, verificamos isOwner
+        if (board.isOwner !== undefined) {
+            return board.isOwner === false;
+        }
+        // Fallback para localStorage (verificar owner)
         return board.owner && board.owner !== currentUser.email;
     });
     
@@ -655,10 +681,11 @@ function renderSharedBoards() {
     // Agrupar quadros por proprietário
     const boardsByOwner = {};
     sharedBoards.forEach(board => {
-        if (!boardsByOwner[board.owner]) {
-            boardsByOwner[board.owner] = [];
+        const ownerEmail = board.owner || board.ownerEmail || 'Desconhecido';
+        if (!boardsByOwner[ownerEmail]) {
+            boardsByOwner[ownerEmail] = [];
         }
-        boardsByOwner[board.owner].push(board);
+        boardsByOwner[ownerEmail].push(board);
     });
     
     // Verificar se a seção existe, se não, criar
