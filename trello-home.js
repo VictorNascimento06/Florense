@@ -548,6 +548,30 @@ async function loadBoards() {
                 renderWorkspaceBoards();
                 renderSharedBoards();
                 return;
+            } else {
+                // Firebase está vazio, verificar se há boards no localStorage para migrar
+                console.log('📂 Firebase vazio, verificando localStorage...');
+                const localBoards = getBoards();
+                
+                if (localBoards.length > 0) {
+                    console.log(`🔄 Encontrados ${localBoards.length} board(s) no localStorage. Migrando para Firebase...`);
+                    
+                    const migrationResult = await window.firebaseService.migrateLocalBoardsToFirebase(localBoards);
+                    
+                    if (migrationResult.success) {
+                        showNotification(`✅ ${localBoards.length} quadro(s) migrado(s) para o Firebase!`, 'success');
+                        
+                        // Recarregar do Firebase
+                        const reloadResult = await window.firebaseService.getUserBoards();
+                        if (reloadResult.success) {
+                            boards = reloadResult.boards;
+                            
+                            // Limpar localStorage antigo
+                            localStorage.removeItem(getUserBoardsKey());
+                            console.log('🗑️ localStorage limpo após migração');
+                        }
+                    }
+                }
             }
         } catch (error) {
             console.warn('⚠️ Erro ao carregar do Firebase:', error);
