@@ -788,6 +788,126 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
+/**
+ * Compartilhar board com outro usuário (por email)
+ */
+async function shareBoardWithUser(boardId, userEmail) {
+    try {
+        const user = getCurrentUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        // Buscar usuário pelo email
+        const usersSnapshot = await db.collection('users')
+            .where('email', '==', userEmail)
+            .get();
+
+        if (usersSnapshot.empty) {
+            return { success: false, error: 'Usuário não encontrado' };
+        }
+
+        const targetUser = usersSnapshot.docs[0];
+        const targetUserId = targetUser.id;
+
+        // Buscar o board
+        const boardDoc = await db.collection('boards').doc(boardId).get();
+        if (!boardDoc.exists) {
+            return { success: false, error: 'Board não encontrado' };
+        }
+
+        const boardData = boardDoc.data();
+
+        // Verificar se o usuário é o dono do board
+        if (boardData.ownerId !== user.uid) {
+            return { success: false, error: 'Apenas o proprietário pode compartilhar o board' };
+        }
+
+        // Adicionar usuário aos membros se ainda não estiver
+        const members = boardData.members || [];
+        if (!members.includes(targetUserId)) {
+            members.push(targetUserId);
+
+            await db.collection('boards').doc(boardId).update({
+                members: members,
+                sharedWith: firebase.firestore.FieldValue.arrayUnion(userEmail),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            console.log('✅ Board compartilhado com sucesso!');
+            return { success: true };
+        } else {
+            return { success: false, error: 'Usuário já tem acesso ao board' };
+        }
+    } catch (error) {
+        console.error('❌ Erro ao compartilhar board:', error);
+        return { success: false, error: error };
+    }
+}
+
+/**
+ * Remover acesso de um usuário ao board
+ */
+async function removeBoardAccess(boardId, userEmail) {
+    try {
+        const user = getCurrentUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        // Buscar usuário pelo email
+        const usersSnapshot = await db.collection('users')
+            .where('email', '==', userEmail)
+            .get();
+
+        if (usersSnapshot.empty) {
+            return { success: false, error: 'Usuário não encontrado' };
+        }
+
+        const targetUserId = usersSnapshot.docs[0].id;
+
+        await db.collection('boards').doc(boardId).update({
+            members: firebase.firestore.FieldValue.arrayRemove(targetUserId),
+            sharedWith: firebase.firestore.FieldValue.arrayRemove(userEmail),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log('✅ Acesso removido com sucesso!');
+        return { success: true };
+    } catch (error) {
+        console.error('❌ Erro ao remover acesso:', error);
+        return { success: false, error: error };
+    }
+}
+
+/**
+ * Obter todos os boards do usuário (próprios + compartilhados)
+ */
+async function getUserBoards() {
+    try {
+        const user = getCurrentUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        // Buscar boards onde o usuário é membro
+        const boardsSnapshot = await db.collection('boards')
+            .where('members', 'array-contains', user.uid)
+            .orderBy('updatedAt', 'desc')
+            .get();
+
+        const boards = [];
+        boardsSnapshot.forEach(doc => {
+            const boardData = doc.data();
+            boards.push({ 
+                id: doc.id, 
+                ...boardData,
+                isOwner: boardData.ownerId === user.uid
+            });
+        });
+
+        console.log(`✅ ${boards.length} board(s) carregado(s) do Firestore`);
+        return { success: true, boards: boards };
+    } catch (error) {
+        console.error('❌ Erro ao buscar boards do usuário:', error);
+        return { success: false, error: error };
+    }
+}
+
 // Exportar funções globalmente
 window.firebaseService = {
     // Auth
@@ -812,6 +932,9 @@ window.firebaseService = {
     getBoard,
     updateBoard,
     deleteBoard,
+    getUserBoards,
+    shareBoardWithUser,
+    removeBoardAccess,
     
     // Lists
     addList,
