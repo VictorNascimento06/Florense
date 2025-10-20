@@ -3423,8 +3423,8 @@ async function updateUserDisplay() {
     }
 }
 
-// Atualizar display do usuário ao carregar
-updateUserDisplay();
+// A função updateUserDisplay() não deve ser chamada aqui!
+// Ela já é chamada automaticamente via initializeUser()
 
 // Tornar funções globais
 window.showProfileModal = showProfileModal;
