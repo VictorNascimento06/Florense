@@ -858,50 +858,79 @@ async function shareBoardWithUser(boardId, userEmail) {
         const user = getCurrentUser();
         if (!user) throw new Error('Usuário não autenticado');
 
+        // Validar email
+        if (!userEmail || !userEmail.includes('@')) {
+            return { success: false, error: 'Email inválido' };
+        }
+
+        // Normalizar email
+        userEmail = userEmail.toLowerCase().trim();
+
+        // Não permitir compartilhar consigo mesmo
+        if (userEmail === user.email) {
+            return { success: false, error: 'Você não pode compartilhar com você mesmo' };
+        }
+
+        console.log('🔍 Buscando usuário:', userEmail);
+
         // Buscar usuário pelo email
         const usersSnapshot = await db.collection('users')
             .where('email', '==', userEmail)
             .get();
 
         if (usersSnapshot.empty) {
-            return { success: false, error: 'Usuário não encontrado' };
+            return { 
+                success: false, 
+                error: `❌ O email "${userEmail}" não está cadastrado no sistema. O usuário precisa criar uma conta primeiro.` 
+            };
         }
 
         const targetUser = usersSnapshot.docs[0];
         const targetUserId = targetUser.id;
+        const targetUserData = targetUser.data();
+
+        console.log('✅ Usuário encontrado:', targetUserData.name || userEmail);
 
         // Buscar o board
         const boardDoc = await db.collection('boards').doc(boardId).get();
         if (!boardDoc.exists) {
-            return { success: false, error: 'Board não encontrado' };
+            return { success: false, error: 'Quadro não encontrado' };
         }
 
         const boardData = boardDoc.data();
 
         // Verificar se o usuário é o dono do board
         if (boardData.ownerId !== user.uid) {
-            return { success: false, error: 'Apenas o proprietário pode compartilhar o board' };
+            return { success: false, error: 'Apenas o proprietário pode compartilhar o quadro' };
         }
 
         // Adicionar usuário aos membros se ainda não estiver
         const members = boardData.members || [];
-        if (!members.includes(targetUserId)) {
-            members.push(targetUserId);
-
-            await db.collection('boards').doc(boardId).update({
-                members: members,
-                sharedWith: firebase.firestore.FieldValue.arrayUnion(userEmail),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            console.log('✅ Board compartilhado com sucesso!');
-            return { success: true };
-        } else {
-            return { success: false, error: 'Usuário já tem acesso ao board' };
+        const sharedWith = boardData.sharedWith || [];
+        
+        if (members.includes(targetUserId) || sharedWith.includes(userEmail)) {
+            return { 
+                success: false, 
+                error: `O usuário ${targetUserData.name || userEmail} já tem acesso a este quadro` 
+            };
         }
+
+        members.push(targetUserId);
+
+        await db.collection('boards').doc(boardId).update({
+            members: members,
+            sharedWith: firebase.firestore.FieldValue.arrayUnion(userEmail),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log('✅ Quadro compartilhado com sucesso!');
+        return { 
+            success: true,
+            userName: targetUserData.name || userEmail
+        };
     } catch (error) {
-        console.error('❌ Erro ao compartilhar board:', error);
-        return { success: false, error: error };
+        console.error('❌ Erro ao compartilhar quadro:', error);
+        return { success: false, error: error.message || 'Erro ao compartilhar quadro' };
     }
 }
 
