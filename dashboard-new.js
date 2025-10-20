@@ -3313,6 +3313,11 @@ async function addMemberToBoard() {
     const emailInput = document.getElementById('share-email');
     const email = emailInput.value.trim();
     
+    console.log('🔄 Tentando compartilhar quadro...');
+    console.log('📧 Email:', email);
+    console.log('📋 Board atual:', currentBoard);
+    console.log('🔥 Firebase auth:', firebase.auth().currentUser);
+    
     if (!email) {
         showNotification('Digite um email válido', 'warning');
         return;
@@ -3328,12 +3333,21 @@ async function addMemberToBoard() {
         return;
     }
     
+    // Verificar se o board tem ID do Firestore
+    if (!currentBoard.id || currentBoard.id.startsWith('board_')) {
+        showNotification('⚠️ Este quadro está no localStorage. Para compartilhar, é necessário salvá-lo no Firebase primeiro.', 'warning');
+        console.warn('❌ Board sem ID do Firestore:', currentBoard);
+        return;
+    }
+    
     // USAR FIREBASE PARA COMPARTILHAR
     if (window.firebaseService && firebase.auth().currentUser) {
         try {
             showNotification('Compartilhando quadro...', 'info');
             
+            console.log('📤 Chamando firebaseService.shareBoardWithUser...');
             const result = await window.firebaseService.shareBoardWithUser(currentBoard.id, email);
+            console.log('📥 Resultado:', result);
             
             if (result.success) {
                 // Atualizar lista local
@@ -3347,6 +3361,7 @@ async function addMemberToBoard() {
                 // Adicionar membro à lista visual
                 const membersList = document.getElementById('shared-members-list');
                 const initial = email[0].toUpperCase();
+                const displayName = result.userName || email;
                 
                 const memberHTML = `
                     <div class="shared-member" data-email="${email}">
@@ -3354,7 +3369,7 @@ async function addMemberToBoard() {
                             <span>${initial}</span>
                         </div>
                         <div class="member-info">
-                            <strong>${email}</strong>
+                            <strong>${displayName}</strong>
                             <span class="member-role">Pode editar</span>
                         </div>
                         <button class="btn-remove-member" onclick="removeMemberFromBoard('${email}')">
@@ -3366,17 +3381,21 @@ async function addMemberToBoard() {
                 membersList.insertAdjacentHTML('beforeend', memberHTML);
                 emailInput.value = '';
                 
-                showNotification('Quadro compartilhado com sucesso!', 'success');
+                showNotification(`✅ Quadro compartilhado com ${displayName}!`, 'success');
             } else {
-                showNotification(result.error || 'Erro ao compartilhar quadro', 'error');
+                const errorMsg = result.error || 'Erro ao compartilhar quadro';
+                console.error('❌ Erro retornado:', errorMsg);
+                showNotification(errorMsg, 'error');
             }
         } catch (error) {
-            console.error('❌ Erro ao compartilhar:', error);
-            showNotification('Erro ao compartilhar quadro', 'error');
+            console.error('❌ Erro ao compartilhar (CATCH):', error);
+            showNotification('Erro: ' + error.message, 'error');
         }
     } else {
-        // FALLBACK PARA LOCALSTORAGE (não funciona entre navegadores)
-        showNotification('Compartilhamento requer Firebase ativo', 'warning');
+        console.warn('⚠️ Firebase não disponível');
+        console.log('Firebase Service:', window.firebaseService);
+        console.log('Firebase Auth:', firebase.auth().currentUser);
+        showNotification('⚠️ Compartilhamento requer autenticação Firebase ativa', 'warning');
     }
 }
 
