@@ -14,6 +14,14 @@ firebase.auth().onAuthStateChanged(async (user) => {
         currentUser = user;
         console.log('✅ Usuário Firebase autenticado:', user.email);
         
+        // LIMPAR TODOS OS BOARDS DO LOCALSTORAGE (para evitar conflitos)
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('boards_')) {
+                console.log('🗑️ Removendo localStorage antigo:', key);
+                localStorage.removeItem(key);
+            }
+        });
+        
         // Inicializar a aplicação apenas uma vez
         if (!isInitialized) {
             isInitialized = true;
@@ -543,6 +551,13 @@ async function loadBoards() {
             if (result.success) {
                 boards = result.boards;
                 console.log(`✅ ${boards.length} board(s) carregado(s) do Firebase`);
+                
+                // LIMPAR LOCALSTORAGE para evitar conflito
+                const localStorageKey = getUserBoardsKey();
+                if (localStorage.getItem(localStorageKey)) {
+                    console.log('🗑️ Limpando localStorage antigo...');
+                    localStorage.removeItem(localStorageKey);
+                }
                 
                 // Se não há boards, criar o quadro inicial no Firebase
                 if (boards.length === 0) {
@@ -1420,7 +1435,13 @@ function getBoards() {
 }
 
 function saveBoards() {
-    // VOLTAR PARA LOCALSTORAGE TEMPORARIAMENTE
+    // NÃO SALVAR NO LOCALSTORAGE se Firebase estiver ativo
+    if (window.firebaseService && firebase.auth().currentUser) {
+        console.log('⚠️ Firebase ativo - não salvando no localStorage');
+        return; // Não fazer nada, o Firebase já gerencia
+    }
+    
+    // FALLBACK: Salvar no localStorage apenas se Firebase não estiver disponível
     localStorage.setItem(getUserBoardsKey(), JSON.stringify(boards));
 }
 
