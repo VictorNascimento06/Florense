@@ -534,52 +534,40 @@ function getBoardBackground(background) {
 // BOARDS MANAGEMENT
 // ============================================
 async function loadBoards() {
-    // TENTAR CARREGAR DO FIREBASE PRIMEIRO
+    // SEMPRE USAR FIREBASE SE ESTIVER DISPONÍVEL
     if (window.firebaseService && firebase.auth().currentUser) {
         try {
             console.log('🔄 Carregando boards do Firebase...');
             const result = await window.firebaseService.getUserBoards();
             
-            if (result.success && result.boards.length > 0) {
+            if (result.success) {
                 boards = result.boards;
                 console.log(`✅ ${boards.length} board(s) carregado(s) do Firebase`);
+                
+                // Se não há boards, criar o quadro inicial no Firebase
+                if (boards.length === 0) {
+                    console.log('📋 Nenhum board encontrado. Criando quadro inicial no Firebase...');
+                    await createInitialFirebaseBoard();
+                    
+                    // Recarregar boards
+                    const reloadResult = await window.firebaseService.getUserBoards();
+                    if (reloadResult.success) {
+                        boards = reloadResult.boards;
+                    }
+                }
                 
                 renderRecentBoards();
                 renderWorkspaceBoards();
                 renderSharedBoards();
                 return;
-            } else {
-                // Firebase está vazio, verificar se há boards no localStorage para migrar
-                console.log('📂 Firebase vazio, verificando localStorage...');
-                const localBoards = getBoards();
-                
-                if (localBoards.length > 0) {
-                    console.log(`🔄 Encontrados ${localBoards.length} board(s) no localStorage. Migrando para Firebase...`);
-                    
-                    const migrationResult = await window.firebaseService.migrateLocalBoardsToFirebase(localBoards);
-                    
-                    if (migrationResult.success) {
-                        showNotification(`✅ ${localBoards.length} quadro(s) migrado(s) para o Firebase!`, 'success');
-                        
-                        // Recarregar do Firebase
-                        const reloadResult = await window.firebaseService.getUserBoards();
-                        if (reloadResult.success) {
-                            boards = reloadResult.boards;
-                            
-                            // Limpar localStorage antigo
-                            localStorage.removeItem(getUserBoardsKey());
-                            console.log('🗑️ localStorage limpo após migração');
-                        }
-                    }
-                }
             }
         } catch (error) {
             console.warn('⚠️ Erro ao carregar do Firebase:', error);
         }
     }
     
-    // FALLBACK PARA LOCALSTORAGE
-    console.log('📂 Carregando boards do localStorage...');
+    // FALLBACK PARA LOCALSTORAGE (se Firebase não estiver disponível)
+    console.log('📂 Firebase não disponível, usando localStorage...');
     boards = getBoards();
     
     // Se não houver boards, criar alguns de exemplo
@@ -589,7 +577,46 @@ async function loadBoards() {
     
     renderRecentBoards();
     renderWorkspaceBoards();
-    renderSharedBoards(); // Nova função para renderizar quadros compartilhados
+    renderSharedBoards();
+}
+
+/**
+ * Criar quadro inicial no Firebase (primeiro login)
+ */
+async function createInitialFirebaseBoard() {
+    try {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        console.log('🎨 Criando "Projeto Florense" no Firebase...');
+        
+        // Criar board diretamente no Firestore
+        const boardData = {
+            name: 'Projeto Florense',
+            background: 'florense',
+            backgroundColor: '#0079bf',
+            backgroundImage: 'url("https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1920")',
+            ownerId: user.uid,
+            ownerEmail: user.email,
+            members: [user.uid],
+            sharedWith: [],
+            starred: false,
+            lists: createDefaultLists(),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastViewed: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const boardRef = await db.collection('boards').add(boardData);
+        console.log('✅ Quadro inicial criado:', boardRef.id);
+        
+        showNotification('🎉 Bem-vindo! Seu primeiro quadro foi criado.', 'success', 4000);
+        
+        return { success: true, boardId: boardRef.id };
+    } catch (error) {
+        console.error('❌ Erro ao criar quadro inicial:', error);
+        return { success: false, error: error };
+    }
 }
 
 async function createSampleBoards() {
@@ -3450,6 +3477,6 @@ window.toggleTheme = toggleTheme;
 // ============================================
 // INICIALIZAÇÃO FINAL
 // ============================================
-console.log('Florense Trello Home carregado com sucesso!');
-console.log('Boards disponíveis:', boards.length);
-console.log('Tema atual:', getTheme());
+console.log('✅ Florense Trello Home carregado com sucesso!');
+console.log('📊 Boards disponíveis:', boards.length);
+console.log('🎨 Tema atual:', getTheme());
