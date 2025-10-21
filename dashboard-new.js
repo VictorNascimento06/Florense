@@ -175,39 +175,71 @@ function initializeCurrentBoardId() {
     currentBoardId = localStorage.getItem(getCurrentBoardIdKey()) || null;
 }
 
-function initializeBoards() {
-    // Carregar boards específicos do usuário logado
-    boards = getBoards();
-    
-    // Criar board padrão se não existir nenhum
-    if (boards.length === 0) {
-        const defaultBoard = {
-            id: generateId(),
-            name: 'Projeto Florense',
-            background: 'florense',
-            starred: false,
-            lists: createDefaultLists() // Board padrão com listas Florense
-        };
-        boards.push(defaultBoard);
-        currentBoardId = defaultBoard.id;
-        localStorage.setItem(getCurrentBoardIdKey(), currentBoardId);
-        saveBoards();
+async function initializeBoards() {
+    try {
+        // 🔥 CARREGAR BOARDS DO FIREBASE
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+            console.log('🔥 Carregando boards do Firebase...');
+            const result = await window.firebaseService.getUserBoards();
+            
+            if (result.success && result.boards && result.boards.length > 0) {
+                boards = result.boards;
+                console.log(`✅ ${boards.length} board(s) carregado(s) do Firebase`);
+            } else {
+                console.log('⚠️ Nenhum board no Firebase, usando localStorage como fallback');
+                boards = getBoards();
+            }
+        } else {
+            // Fallback: localStorage
+            console.log('📦 Carregando boards do localStorage (fallback)');
+            boards = getBoards();
+        }
+        
+        // NÃO criar board padrão automático - deixar usuário criar quando quiser
+        
+        if (!currentBoardId && boards.length > 0) {
+            currentBoardId = boards[0].id;
+            localStorage.setItem(getCurrentBoardIdKey(), currentBoardId);
+        }
+        
+        renderBoardsList();
+    } catch (error) {
+        console.error('❌ Erro ao inicializar boards:', error);
+        boards = getBoards(); // Fallback para localStorage
+        renderBoardsList();
     }
-    
-    if (!currentBoardId && boards.length > 0) {
-        currentBoardId = boards[0].id;
-        localStorage.setItem(getCurrentBoardIdKey(), currentBoardId);
-    }
-    
-    renderBoardsList();
 }
 
-function loadCurrentBoard() {
+async function loadCurrentBoard() {
     if (currentBoardId) {
-        // Procurar primeiro nos boards do workspace principal
-        currentBoard = boards.find(b => b.id === currentBoardId);
+        console.log('🔍 Buscando board ID:', currentBoardId);
         
-        // Se não encontrou, procurar nos workspaces de usuário
+        // 🔥 BUSCAR BOARD DO FIREBASE PRIMEIRO
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+            try {
+                console.log('🔥 Tentando carregar board do Firebase...');
+                const result = await window.firebaseService.getBoard(currentBoardId);
+                
+                if (result.success && result.board) {
+                    currentBoard = result.board;
+                    console.log('✅ Board carregado do Firebase:', currentBoard.name);
+                } else {
+                    console.log('⚠️ Board não encontrado no Firebase, buscando no localStorage...');
+                    // Fallback para localStorage
+                    currentBoard = boards.find(b => b.id === currentBoardId);
+                }
+            } catch (error) {
+                console.error('❌ Erro ao buscar board do Firebase:', error);
+                // Fallback para localStorage
+                currentBoard = boards.find(b => b.id === currentBoardId);
+            }
+        } else {
+            // Fallback: localStorage
+            console.log('📦 Carregando board do localStorage (fallback)');
+            currentBoard = boards.find(b => b.id === currentBoardId);
+        }
+        
+        // Se não encontrou em lugar nenhum
         if (!currentBoard) {
             const userWorkspaces = JSON.parse(localStorage.getItem('user-workspaces') || '[]');
             
@@ -233,7 +265,7 @@ function loadCurrentBoard() {
                 applyBoardBackground(currentBoard.background);
             }
         } else {
-            console.error('Board não encontrado:', currentBoardId);
+            console.error('❌ Board não encontrado em nenhum lugar:', currentBoardId);
             // Redirecionar de volta para home se o board não existe
             showNotification('Quadro não encontrado!', 'error');
             setTimeout(() => {
@@ -244,53 +276,15 @@ function loadCurrentBoard() {
 }
 
 // Verificar se há atualizações no quadro (feitas por outros membros)
-function checkForBoardUpdates() {
+async function checkForBoardUpdates() {
     if (!currentBoard) return;
     
-    const currentUser = JSON.parse(localStorage.getItem('loggedUser'));
+    // 🔥 SINCRONIZAÇÃO VIA FIREBASE (não mais localStorage)
+    // Agora os boards são salvos no Firebase, então não precisamos
+    // verificar localStorage de outros usuários
     
-    // Se você é o owner, verificar atualizações dos membros compartilhados
-    if (currentBoard.owner === currentUser.email && currentBoard.sharedWith) {
-        // Verificar se algum membro atualizou o quadro
-        currentBoard.sharedWith.forEach(memberEmail => {
-            const memberBoardsKey = `boards_${memberEmail}`;
-            let memberBoards = JSON.parse(localStorage.getItem(memberBoardsKey)) || [];
-            const memberBoard = memberBoards.find(b => b.id === currentBoard.id);
-            
-            if (memberBoard && memberBoard.lastModified && currentBoard.lastModified) {
-                if (new Date(memberBoard.lastModified) > new Date(currentBoard.lastModified)) {
-                    // Há uma versão mais recente! Atualizar
-                    currentBoard = memberBoard;
-                    const boardIndex = boards.findIndex(b => b.id === currentBoard.id);
-                    if (boardIndex > -1) {
-                        boards[boardIndex] = currentBoard;
-                        localStorage.setItem(getUserBoardsKey(), JSON.stringify(boards));
-                    }
-                    showNotification('📥 Quadro atualizado com alterações de ' + memberEmail.split('@')[0], 'info');
-                }
-            }
-        });
-    }
-    
-    // Se você NÃO é o owner, verificar atualizações do proprietário
-    if (currentBoard.owner && currentBoard.owner !== currentUser.email) {
-        const ownerBoardsKey = `boards_${currentBoard.owner}`;
-        let ownerBoards = JSON.parse(localStorage.getItem(ownerBoardsKey)) || [];
-        const ownerBoard = ownerBoards.find(b => b.id === currentBoard.id);
-        
-        if (ownerBoard && ownerBoard.lastModified && currentBoard.lastModified) {
-            if (new Date(ownerBoard.lastModified) > new Date(currentBoard.lastModified)) {
-                // Há uma versão mais recente! Atualizar
-                currentBoard = ownerBoard;
-                const boardIndex = boards.findIndex(b => b.id === currentBoard.id);
-                if (boardIndex > -1) {
-                    boards[boardIndex] = currentBoard;
-                    localStorage.setItem(getUserBoardsKey(), JSON.stringify(boards));
-                }
-                showNotification('📥 Quadro atualizado com alterações do proprietário', 'info');
-            }
-        }
-    }
+    // TODO: Implementar sincronização em tempo real via Firebase listeners
+    console.log('✅ Board carregado:', currentBoard.name);
 }
 
 function renderBoard() {
@@ -1692,13 +1686,16 @@ function updateBoardTitle() {
     }
 }
 
-function deleteBoardFromSidebar(boardId, event) {
+async function deleteBoardFromSidebar(boardId, event) {
     // Prevenir que o clique no botão de exclusão troque de board
     event.stopPropagation();
     
     // Encontrar o board
     const board = boards.find(b => b.id === boardId);
-    if (!board) return;
+    if (!board) {
+        showNotification('Quadro não encontrado!', 'error');
+        return;
+    }
     
     // Não permitir excluir se for o único board
     if (boards.length === 1) {
@@ -1706,24 +1703,43 @@ function deleteBoardFromSidebar(boardId, event) {
         return;
     }
     
-    // Excluir diretamente sem confirmação
-    const boardIndex = boards.findIndex(b => b.id === boardId);
-    if (boardIndex > -1) {
-        boards.splice(boardIndex, 1);
-        saveBoards();
-        
-        // Se era o board atual, mudar para o primeiro disponível
-        if (currentBoardId === boardId) {
-            currentBoardId = boards[0].id;
-            localStorage.setItem(getCurrentBoardIdKey(), currentBoardId);
-            loadCurrentBoard();
+    try {
+        // 🔥 DELETAR DO FIREBASE PRIMEIRO
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+            console.log('🔥 Deletando board do Firebase:', boardId);
+            const result = await window.firebaseService.deleteBoard(boardId);
+            
+            if (result.success) {
+                console.log('✅ Board deletado do Firebase');
+            } else {
+                console.error('❌ Erro ao deletar do Firebase:', result.error);
+                showNotification('Erro ao excluir quadro do Firebase', 'error');
+                return;
+            }
         }
         
-        // Re-renderizar lista de boards
-        renderBoardsList();
-        
-        // Mostrar notificação de sucesso
-        showNotification(`Quadro "${board.name}" excluído com sucesso!`);
+        // Deletar do array local
+        const boardIndex = boards.findIndex(b => b.id === boardId);
+        if (boardIndex > -1) {
+            boards.splice(boardIndex, 1);
+            saveBoards(); // Salvar no localStorage também
+            
+            // Se era o board atual, mudar para o primeiro disponível
+            if (currentBoardId === boardId) {
+                currentBoardId = boards[0].id;
+                localStorage.setItem(getCurrentBoardIdKey(), currentBoardId);
+                await loadCurrentBoard();
+            }
+            
+            // Re-renderizar lista de boards
+            renderBoardsList();
+            
+            // Mostrar notificação de sucesso
+            showNotification(`Quadro "${board.name}" excluído com sucesso!`);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao deletar board:', error);
+        showNotification('Erro ao excluir quadro', 'error');
     }
 }
 
