@@ -3530,31 +3530,37 @@ async function addMemberToBoard() {
     }
 }
 
-function removeMemberFromBoard(email) {
+async function removeMemberFromBoard(email) {
     if (!currentBoard) return;
     
     if (confirm(`Remover acesso de ${email} a este quadro?`)) {
-        // Remover da lista de compartilhamento do quadro
-        if (currentBoard.sharedWith) {
-            currentBoard.sharedWith = currentBoard.sharedWith.filter(e => e !== email);
+        try {
+            // Remover do Firebase primeiro
+            const result = await window.firebaseService.removeBoardMember(currentBoard.id, email);
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Erro ao remover membro');
+            }
+            
+            // Remover da lista de compartilhamento do quadro local
+            if (currentBoard.sharedWith) {
+                currentBoard.sharedWith = currentBoard.sharedWith.filter(e => e !== email);
+            }
+            
+            // Salvar alterações no Firebase
+            await saveBoardToFirebase();
+            
+            // Remover da lista visual
+            const memberElement = document.querySelector(`.shared-member[data-email="${email}"]`);
+            if (memberElement) {
+                memberElement.remove();
+            }
+            
+            showNotification(`✅ ${email} foi removido do quadro`, 'success');
+        } catch (error) {
+            console.error('Erro ao remover membro:', error);
+            showNotification(`❌ Erro ao remover membro: ${error.message}`, 'error');
         }
-        
-        // Remover quadro do localStorage do usuário
-        const sharedBoardKey = `boards_${email}`;
-        let sharedUserBoards = JSON.parse(localStorage.getItem(sharedBoardKey)) || [];
-        sharedUserBoards = sharedUserBoards.filter(b => b.id !== currentBoard.id);
-        localStorage.setItem(sharedBoardKey, JSON.stringify(sharedUserBoards));
-        
-        // Salvar alterações
-        saveBoards();
-        
-        // Remover da lista visual
-        const memberElement = document.querySelector(`.shared-member[data-email="${email}"]`);
-        if (memberElement) {
-            memberElement.remove();
-        }
-        
-        showNotification(`${email} foi removido do quadro`, 'info');
     }
 }
 
