@@ -929,10 +929,9 @@ async function shareBoardWithUser(boardId, userEmail) {
             };
         }
 
-        members.push(targetUserId);
-
+        // Atualizar board com arrayUnion para garantir que o membro seja adicionado
         await db.collection('boards').doc(boardId).update({
-            members: members,
+            members: firebase.firestore.FieldValue.arrayUnion(targetUserId),
             sharedWith: firebase.firestore.FieldValue.arrayUnion(userEmail),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
