@@ -1557,7 +1557,7 @@ async function addCardWithDetails(listId, cardData) {
     renderLists(); // Re-renderizar todas as listas para garantir consistência
 }
 
-function moveCard(cardId, sourceListId, targetListId) {
+async function moveCard(cardId, sourceListId, targetListId) {
     const sourceList = currentBoard.lists.find(l => l.id === sourceListId);
     const targetList = currentBoard.lists.find(l => l.id === targetListId);
     
@@ -1569,7 +1569,7 @@ function moveCard(cardId, sourceListId, targetListId) {
     const card = sourceList.cards.splice(cardIndex, 1)[0];
     targetList.cards.push(card);
     
-    saveBoards();
+    await saveBoardToFirebase();
     renderLists();
 }
 
@@ -2804,7 +2804,43 @@ function closePreview() {
 }
 
 function downloadAttachment(attachmentId) {
-    showNotification('Função de download será implementada em versão futura');
+    if (!currentCard || !currentCard.attachments) return;
+    
+    const attachment = currentCard.attachments.find(a => a.id === attachmentId);
+    if (!attachment) {
+        showNotification('Anexo não encontrado!', 'error');
+        return;
+    }
+    
+    // Criar elemento de link temporário para download
+    const link = document.createElement('a');
+    
+    // Se for imagem com previewUrl (blob), usar ela
+    if (attachment.previewUrl) {
+        link.href = attachment.previewUrl;
+    } 
+    // Se for arquivo do Firebase Storage, usar a URL
+    else if (attachment.url) {
+        link.href = attachment.url;
+    }
+    // Se for arquivo em base64
+    else if (attachment.data) {
+        link.href = attachment.data;
+    }
+    else {
+        showNotification('Não foi possível baixar o anexo!', 'error');
+        return;
+    }
+    
+    link.download = attachment.name || 'anexo';
+    link.target = '_blank';
+    
+    // Adicionar ao DOM, clicar e remover
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification(`📥 Baixando "${attachment.name}"...`, 'success');
 }
 
 function removeAttachment(attachmentId) {
