@@ -559,16 +559,23 @@ async function loadBoards() {
                     localStorage.removeItem(localStorageKey);
                 }
                 
-                // Se não há boards, criar o quadro inicial no Firebase
-                if (boards.length === 0) {
-                    console.log('📋 Nenhum board encontrado. Criando quadro inicial no Firebase...');
+                // Se não há boards E o usuário nunca teve boards antes, criar o quadro inicial
+                const hasCreatedInitialBoard = localStorage.getItem(`initial_board_created_${firebase.auth().currentUser.uid}`);
+                
+                if (boards.length === 0 && !hasCreatedInitialBoard) {
+                    console.log('📋 Primeiro acesso! Criando quadro inicial no Firebase...');
                     await createInitialFirebaseBoard();
+                    
+                    // Marcar que o quadro inicial já foi criado
+                    localStorage.setItem(`initial_board_created_${firebase.auth().currentUser.uid}`, 'true');
                     
                     // Recarregar boards
                     const reloadResult = await window.firebaseService.getUserBoards();
                     if (reloadResult.success) {
                         boards = reloadResult.boards;
                     }
+                } else if (boards.length === 0) {
+                    console.log('📭 Nenhum board encontrado (usuário deletou todos)');
                 }
                 
                 renderRecentBoards();
@@ -1287,7 +1294,31 @@ function createNewBoard(event) {
     } else {
         // Se for workspace principal
         boards.push(newBoard);
-        saveBoards(); // VOLTAR PARA LOCALSTORAGE
+        saveBoards(); // Salvar no localStorage
+        
+        // 🔥 SALVAR NO FIREBASE TAMBÉM
+        if (window.firebaseService && currentUser) {
+            console.log('💾 Salvando board no Firebase...');
+            window.firebaseService.createBoard({
+                name: newBoard.name,
+                background: newBoard.background,
+                lists: newBoard.lists,
+                workspaceName: newBoard.workspaceName
+            }).then(result => {
+                if (result.success) {
+                    console.log('✅ Board salvo no Firebase com ID:', result.boardId);
+                    // Atualizar o ID local com o ID do Firebase
+                    newBoard.id = result.boardId;
+                    saveBoards();
+                } else {
+                    console.warn('⚠️ Erro ao salvar no Firebase:', result.error);
+                }
+            }).catch(error => {
+                console.error('❌ Erro ao salvar board no Firebase:', error);
+            });
+        } else {
+            console.warn('⚠️ Firebase não disponível, salvando apenas no localStorage');
+        }
         
         // Atualizar visualizações do workspace principal
         renderRecentBoards();
