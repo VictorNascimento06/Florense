@@ -287,35 +287,49 @@ async function deleteWorkspace(workspaceId) {
 /**
  * Criar novo board
  */
-async function createBoard(workspaceId, name, backgroundColor = '#0079bf') {
+async function createBoard(boardConfig) {
     try {
         const user = getCurrentUser();
         if (!user) throw new Error('Usuário não autenticado');
 
+        // Extrair dados do objeto de configuração
+        const {
+            name,
+            background,
+            backgroundColor,
+            backgroundImage,
+            lists = [],
+            workspaceName,
+            workspaceId = null
+        } = boardConfig;
+
         const boardData = {
+            name: name || 'Novo Quadro',
+            background: background || 'default',
+            backgroundColor: backgroundColor || '#0079bf',
+            backgroundImage: backgroundImage || null,
             workspaceId: workspaceId,
-            name: name,
-            backgroundColor: backgroundColor,
-            backgroundImage: null,
+            workspaceName: workspaceName || 'Florense Workspace',
             ownerId: user.uid,
+            ownerEmail: user.email,
             members: [user.uid],
-            lists: [],
+            sharedWith: [],
+            starred: false,
+            lists: lists,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastViewed: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        console.log('📋 Criando board no Firebase:', boardData);
 
         const boardRef = await db.collection('boards').add(boardData);
 
-        // Atualizar workspace
-        await db.collection('workspaces').doc(workspaceId).update({
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        console.log('✅ Board criado com sucesso!');
+        console.log('✅ Board criado com sucesso! ID:', boardRef.id);
         return { success: true, boardId: boardRef.id };
     } catch (error) {
         console.error('❌ Erro ao criar board:', error);
-        return { success: false, error: error };
+        return { success: false, error: error.message || error };
     }
 }
 
