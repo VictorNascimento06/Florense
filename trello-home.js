@@ -1089,7 +1089,7 @@ function openBoard(boardId) {
     }
 }
 
-function deleteBoard(boardId, event) {
+async function deleteBoard(boardId, event) {
     // Prevenir que o clique no botão de exclusão abra o quadro
     event.stopPropagation();
     
@@ -1125,49 +1125,67 @@ function deleteBoard(boardId, event) {
         return;
     }
     
-    // Excluir o board
-    if (isUserWorkspaceBoard && workspaceData) {
-        // Excluir do workspace do usuário
-        workspaceData.boards.splice(boardIndex, 1);
-        
-        // Salvar de volta no localStorage
-        const userWorkspaces = JSON.parse(localStorage.getItem('user-workspaces') || '[]');
-        const workspaceIndex = userWorkspaces.findIndex(ws => ws.id === workspaceData.id);
-        if (workspaceIndex > -1) {
-            userWorkspaces[workspaceIndex] = workspaceData;
-            localStorage.setItem('user-workspaces', JSON.stringify(userWorkspaces));
+    try {
+        // 🔥 DELETAR DO FIREBASE PRIMEIRO
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+            console.log('🔥 Deletando board do Firebase:', boardId);
+            const result = await window.firebaseService.deleteBoard(boardId);
+            
+            if (result.success) {
+                console.log('✅ Board deletado do Firebase');
+            } else {
+                console.warn('⚠️ Aviso ao deletar do Firebase:', result.error);
+                // Continuar mesmo se falhar (board pode não existir no Firebase)
+            }
         }
         
-        // Atualizar a interface do workspace específico
-        updateWorkspaceBoards(workspaceData.id, workspaceData.name);
+        // Excluir do localStorage
+        if (isUserWorkspaceBoard && workspaceData) {
+            // Excluir do workspace do usuário
+            workspaceData.boards.splice(boardIndex, 1);
+            
+            // Salvar de volta no localStorage
+            const userWorkspaces = JSON.parse(localStorage.getItem('user-workspaces') || '[]');
+            const workspaceIndex = userWorkspaces.findIndex(ws => ws.id === workspaceData.id);
+            if (workspaceIndex > -1) {
+                userWorkspaces[workspaceIndex] = workspaceData;
+                localStorage.setItem('user-workspaces', JSON.stringify(userWorkspaces));
+            }
+            
+            // Atualizar a interface do workspace específico
+            updateWorkspaceBoards(workspaceData.id, workspaceData.name);
+            
+            console.log(`Board "${board.name}" excluído do workspace "${workspaceData.name}"`);
+        } else {
+            // Excluir do workspace principal
+            boards.splice(boardIndex, 1);
+            saveBoards();
+            
+            // Re-renderizar listas de boards
+            renderRecentBoards();
+            renderWorkspaceBoards();
+            renderSharedBoards();
+        }
         
-        console.log(`Board "${board.name}" excluído do workspace "${workspaceData.name}"`);
-    } else {
-        // Excluir do workspace principal
-        boards.splice(boardIndex, 1);
-        saveBoards();
+        // Se era o board atual, limpar referência
+        const currentBoardId = localStorage.getItem(getCurrentBoardIdKey());
+        if (currentBoardId === boardId) {
+            localStorage.removeItem(getCurrentBoardIdKey());
+        }
         
-        // Re-renderizar listas de boards
-        renderRecentBoards();
-        renderWorkspaceBoards();
-        renderSharedBoards();
+        // Mostrar notificação de sucesso
+        showNotification(`Quadro "${board.name}" excluído com sucesso!`, 'success');
+        
+        // Adicionar notificação no sistema
+        addNotification(
+            'Quadro Excluído',
+            `O quadro "${board.name}" foi excluído com sucesso.`,
+            'warning'
+        );
+    } catch (error) {
+        console.error('❌ Erro ao deletar board:', error);
+        showNotification('Erro ao excluir quadro!', 'error');
     }
-    
-    // Se era o board atual, limpar referência
-    const currentBoardId = localStorage.getItem(getCurrentBoardIdKey());
-    if (currentBoardId === boardId) {
-        localStorage.removeItem(getCurrentBoardIdKey());
-    }
-    
-    // Mostrar notificação de sucesso
-    showNotification(`Quadro "${board.name}" excluído com sucesso!`, 'success');
-    
-    // Adicionar notificação no sistema
-    addNotification(
-        'Quadro Excluído',
-        `O quadro "${board.name}" foi excluído com sucesso.`,
-        'warning'
-    );
 }
 
 function showCreateBoardModal(workspaceElement) {
