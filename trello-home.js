@@ -729,18 +729,26 @@ function renderWorkspaceBoards() {
 }
 
 function renderSharedBoards() {
-    const currentUser = JSON.parse(localStorage.getItem('loggedUser'));
-    if (!currentUser) return;
+    const currentUser = firebase.auth().currentUser;
+    if (!currentUser) {
+        console.log('⚠️ Usuário não autenticado, não pode carregar boards compartilhados');
+        return;
+    }
+    
+    console.log('🔍 Verificando boards compartilhados...');
+    console.log('Total de boards:', boards.length);
     
     // Filtrar quadros compartilhados (onde isOwner === false)
     const sharedBoards = boards.filter(board => {
         // No Firebase, verificamos isOwner
-        if (board.isOwner !== undefined) {
-            return board.isOwner === false;
+        const isShared = board.isOwner === false;
+        if (isShared) {
+            console.log('✅ Board compartilhado encontrado:', board.name, 'Owner:', board.ownerEmail);
         }
-        // Fallback para localStorage (verificar owner)
-        return board.owner && board.owner !== currentUser.email;
+        return isShared;
     });
+    
+    console.log(`📊 Total de boards compartilhados: ${sharedBoards.length}`);
     
     if (sharedBoards.length === 0) {
         // Se não há quadros compartilhados, esconder a seção
@@ -748,13 +756,15 @@ function renderSharedBoards() {
         if (sharedSection) {
             sharedSection.style.display = 'none';
         }
+        console.log('📭 Nenhum board compartilhado para exibir');
         return;
     }
     
     // Agrupar quadros por proprietário
     const boardsByOwner = {};
     sharedBoards.forEach(board => {
-        const ownerEmail = board.owner || board.ownerEmail || 'Desconhecido';
+        const ownerEmail = board.ownerEmail || board.owner || 'Desconhecido';
+        console.log('📋 Agrupando board:', board.name, 'Owner:', ownerEmail);
         if (!boardsByOwner[ownerEmail]) {
             boardsByOwner[ownerEmail] = [];
         }
@@ -777,7 +787,9 @@ function renderSharedBoards() {
     Object.keys(boardsByOwner).forEach(ownerEmail => {
         const ownerBoards = boardsByOwner[ownerEmail];
         const ownerName = ownerEmail.split('@')[0];
-        const userName = currentUser.username || currentUser.email.split('@')[0];
+        const userName = currentUser.displayName || currentUser.email.split('@')[0];
+        
+        console.log('🎨 Criando seção para:', ownerName, 'com', ownerBoards.length, 'board(s)');
         
         const workspaceHeader = document.createElement('div');
         workspaceHeader.className = 'workspace-header';
@@ -787,9 +799,9 @@ function renderSharedBoards() {
                     <i class="fas fa-users"></i>
                 </div>
                 <div>
-                    <h2 class="workspace-name">Quadros Compartilhados: ${ownerName} & ${userName}</h2>
+                    <h2 class="workspace-name">Compartilhado por ${ownerName}</h2>
                     <p style="color: #6b778c; font-size: 14px; margin: 4px 0 0 0;">
-                        <i class="fas fa-share-alt"></i> ${ownerBoards.length} quadro(s) compartilhado(s)
+                        <i class="fas fa-share-alt"></i> ${ownerBoards.length} quadro(s) compartilhado(s) com você
                     </p>
                 </div>
             </div>
@@ -1093,6 +1105,10 @@ async function deleteBoard(boardId, event) {
     // Prevenir que o clique no botão de exclusão abra o quadro
     event.stopPropagation();
     
+    console.log('🗑️ Tentando deletar board ID:', boardId);
+    console.log('📊 Total de boards no array:', boards.length);
+    console.log('📋 IDs dos boards:', boards.map(b => ({ id: b.id, name: b.name })));
+    
     // Procurar primeiro no array global (workspace principal)
     let board = boards.find(b => b.id === boardId);
     let boardIndex = boards.findIndex(b => b.id === boardId);
@@ -1129,14 +1145,20 @@ async function deleteBoard(boardId, event) {
         // 🔥 DELETAR DO FIREBASE PRIMEIRO
         if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
             console.log('🔥 Deletando board do Firebase:', boardId);
+            console.log('Board ID sendo deletado:', boardId);
+            console.log('Board name:', board.name);
+            
             const result = await window.firebaseService.deleteBoard(boardId);
             
             if (result.success) {
-                console.log('✅ Board deletado do Firebase');
+                console.log('✅ Board deletado do Firebase com sucesso!');
             } else {
-                console.warn('⚠️ Aviso ao deletar do Firebase:', result.error);
-                // Continuar mesmo se falhar (board pode não existir no Firebase)
+                console.error('❌ ERRO ao deletar do Firebase:', result.error);
+                showNotification(`Erro ao excluir quadro: ${result.error}`, 'error');
+                return; // NÃO continuar se Firebase falhou
             }
+        } else {
+            console.warn('⚠️ Firebase não disponível, deletando apenas localmente');
         }
         
         // Excluir do localStorage
@@ -1247,7 +1269,7 @@ function closeCreateBoardModal() {
     modal.classList.remove('show');
 }
 
-function createNewBoard(event) {
+async function createNewBoard(event) {
     event.preventDefault();
     
     const titleInput = document.getElementById('board-title-input');
@@ -1281,8 +1303,8 @@ function createNewBoard(event) {
         showNotification('✨ Background inspirador selecionado automaticamente!', 'info', 2500);
     }
 
-    const newBoard = {
-        id: generateId(),
+    // Preparar dados do board
+    const boardData = {
         name: title,
         background: background,
         starred: false,
@@ -1293,55 +1315,117 @@ function createNewBoard(event) {
     };
 
     if (isUserWorkspace) {
-        // Se for workspace criado pelo usuário, salvar nos dados do workspace
-        const userWorkspaces = JSON.parse(localStorage.getItem('user-workspaces') || '[]');
-        const workspace = userWorkspaces.find(ws => ws.id === targetWorkspaceId || ws.name === targetWorkspaceName);
-        
-        if (workspace) {
-            if (!workspace.boards) {
-                workspace.boards = [];
-            }
-            workspace.boards.push(newBoard);
-            localStorage.setItem('user-workspaces', JSON.stringify(userWorkspaces));
-            
-            console.log('Board adicionado ao workspace do usuário:', workspace.name);
-            
-            // Atualizar a interface do workspace específico
-            updateWorkspaceBoards(targetWorkspaceId, targetWorkspaceName);
-        }
-    } else {
-        // Se for workspace principal
-        boards.push(newBoard);
-        saveBoards(); // Salvar no localStorage
-        
-        // 🔥 SALVAR NO FIREBASE TAMBÉM
-        if (window.firebaseService && currentUser) {
-            console.log('💾 Salvando board no Firebase...');
-            window.firebaseService.createBoard({
-                name: newBoard.name,
-                background: newBoard.background,
-                lists: newBoard.lists,
-                workspaceName: newBoard.workspaceName
-            }).then(result => {
+        // Se for workspace criado pelo usuário - SALVAR NO FIREBASE TAMBÉM
+        if (window.firebaseService && firebase.auth().currentUser) {
+            try {
+                console.log('💾 Salvando board no Firebase (workspace do usuário)...');
+                showNotification('Criando quadro...', 'info');
+                
+                const result = await window.firebaseService.createBoard(boardData);
+                
                 if (result.success) {
                     console.log('✅ Board salvo no Firebase com ID:', result.boardId);
-                    // Atualizar o ID local com o ID do Firebase
-                    newBoard.id = result.boardId;
-                    saveBoards();
+                    
+                    const newBoard = {
+                        id: result.boardId,
+                        ...boardData
+                    };
+                    
+                    // Adicionar ao workspace local também
+                    const userWorkspaces = JSON.parse(localStorage.getItem('user-workspaces') || '[]');
+                    const workspace = userWorkspaces.find(ws => ws.id === targetWorkspaceId || ws.name === targetWorkspaceName);
+                    
+                    if (workspace) {
+                        if (!workspace.boards) {
+                            workspace.boards = [];
+                        }
+                        workspace.boards.push(newBoard);
+                        localStorage.setItem('user-workspaces', JSON.stringify(userWorkspaces));
+                        
+                        console.log('Board adicionado ao workspace do usuário:', workspace.name);
+                        updateWorkspaceBoards(targetWorkspaceId, targetWorkspaceName);
+                    }
+                    
+                    showNotification(`Quadro "${title}" criado com sucesso!`, 'success');
                 } else {
-                    console.warn('⚠️ Erro ao salvar no Firebase:', result.error);
+                    console.error('❌ Erro ao salvar no Firebase:', result.error);
+                    showNotification('Erro ao criar quadro!', 'error');
+                    return;
                 }
-            }).catch(error => {
-                console.error('❌ Erro ao salvar board no Firebase:', error);
-            });
+            } catch (error) {
+                console.error('❌ Erro ao criar board:', error);
+                showNotification('Erro ao criar quadro!', 'error');
+                return;
+            }
         } else {
-            console.warn('⚠️ Firebase não disponível, salvando apenas no localStorage');
+            // Fallback: localStorage
+            const newBoard = {
+                id: generateId(),
+                ...boardData
+            };
+            const userWorkspaces = JSON.parse(localStorage.getItem('user-workspaces') || '[]');
+            const workspace = userWorkspaces.find(ws => ws.id === targetWorkspaceId || ws.name === targetWorkspaceName);
+            
+            if (workspace) {
+                if (!workspace.boards) {
+                    workspace.boards = [];
+                }
+                workspace.boards.push(newBoard);
+                localStorage.setItem('user-workspaces', JSON.stringify(userWorkspaces));
+                updateWorkspaceBoards(targetWorkspaceId, targetWorkspaceName);
+            }
         }
-        
-        // Atualizar visualizações do workspace principal
-        renderRecentBoards();
-        renderWorkspaceBoards();
-        renderSharedBoards();
+    } else {
+        // Se for workspace principal - SALVAR NO FIREBASE PRIMEIRO
+        if (window.firebaseService && firebase.auth().currentUser) {
+            try {
+                console.log('💾 Salvando board no Firebase...');
+                showNotification('Criando quadro...', 'info');
+                
+                const result = await window.firebaseService.createBoard(boardData);
+                
+                if (result.success) {
+                    console.log('✅ Board salvo no Firebase com ID:', result.boardId);
+                    
+                    // Criar objeto board completo com ID do Firebase
+                    const newBoard = {
+                        id: result.boardId,
+                        ...boardData
+                    };
+                    
+                    // Adicionar ao array local para exibição imediata
+                    boards.push(newBoard);
+                    
+                    showNotification(`Quadro "${title}" criado com sucesso!`, 'success');
+                    
+                    // Atualizar visualizações
+                    renderRecentBoards();
+                    renderWorkspaceBoards();
+                    renderSharedBoards();
+                } else {
+                    console.error('❌ Erro ao salvar no Firebase:', result.error);
+                    showNotification('Erro ao criar quadro!', 'error');
+                    return;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao criar board:', error);
+                showNotification('Erro ao criar quadro!', 'error');
+                return;
+            }
+        } else {
+            // Fallback: localStorage (se Firebase não disponível)
+            console.warn('⚠️ Firebase não disponível, salvando apenas no localStorage');
+            const newBoard = {
+                id: generateId(),
+                ...boardData
+            };
+            boards.push(newBoard);
+            saveBoards();
+            
+            renderRecentBoards();
+            renderWorkspaceBoards();
+            renderSharedBoards();
+        }
     }
     
     closeCreateBoardModal();
@@ -1420,7 +1504,7 @@ function updateBoardGrids(filteredBoards) {
 }
 
 // ============================================
-// BACKGROUND SELECTION
+// BACKGROUND SELECT
 // ============================================
 function setupBackgroundSelection() {
     const bgOptions = document.querySelectorAll('.bg-option');
