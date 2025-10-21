@@ -164,30 +164,8 @@
                     <h2 class="section-title">Visualizado recentemente</h2>
                 </div>
 
-                <div class="boards-grid">
-                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')">
-                        <div class="board-overlay">
-                            <span class="board-name">Projeto Florense</span>
-                        </div>
-                    </div>
-
-                    <div class="board-card gradient-purple">
-                        <div class="board-overlay">
-                            <span class="board-name">Desenvolvimento Mobile</span>
-                        </div>
-                    </div>
-
-                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')">
-                        <div class="board-overlay">
-                            <span class="board-name">Marketing Digital</span>
-                        </div>
-                    </div>
-
-                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')">
-                        <div class="board-overlay">
-                            <span class="board-name">Recursos Humanos</span>
-                        </div>
-                    </div>
+                <div class="boards-grid" id="recent-boards-grid">
+                    <!-- Quadros recentes serão inseridos aqui dinamicamente pelo JavaScript -->
                 </div>
             </section>
 
@@ -215,35 +193,12 @@
                     </div>
                 </div>
 
-                <div class="boards-grid">
-                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')" onclick="openBoard('board1')">
-                        <div class="board-overlay">
-                            <span class="board-name">Projeto Principal</span>
-                        </div>
-                    </div>
-
-                    <div class="board-card gradient-purple" onclick="openBoard('board2')">
-                        <div class="board-overlay">
-                            <span class="board-name">Design System</span>
-                        </div>
-                    </div>
-
-                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')" onclick="openBoard('board3')">
-                        <div class="board-overlay">
-                            <span class="board-name">Sprint Planning</span>
-                        </div>
-                    </div>
-
-                    <div class="board-card" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')" onclick="openBoard('board4')">
-                        <div class="board-overlay">
-                            <span class="board-name">QA Testing</span>
-                        </div>
-                    </div>
-
+                <div class="boards-grid" id="workspace-boards-grid">
+                    <!-- Quadros do workspace serão inseridos aqui dinamicamente pelo JavaScript -->
                     <div class="create-board-card" onclick="showCreateBoardModal(this)">
                         <div class="create-board-content">
                             <span class="create-board-text">Criar novo quadro</span>
-                            <div class="create-board-subtitle">6 restante(s)</div>
+                            <div class="create-board-subtitle">10 restantes</div>
                         </div>
                     </div>
                 </div>
