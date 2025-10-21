@@ -2669,35 +2669,52 @@ function validateFileType(file) {
     return allowedTypes.includes(file.type);
 }
 
-function addAttachmentToCard(file) {
+async function addAttachmentToCard(file) {
     if (!currentCard.attachments) {
         currentCard.attachments = [];
     }
     
-    // Criar URL temporária para preview (apenas para imagens)
-    const isImage = file.type.startsWith('image/');
-    let previewUrl = null;
-    
-    if (isImage) {
-        previewUrl = URL.createObjectURL(file);
+    try {
+        // Mostrar notificação de upload em andamento
+        showNotification(`📤 Fazendo upload de "${file.name}"...`, 'info');
+        
+        // Fazer upload do arquivo para o Firebase Storage
+        const uploadResult = await window.firebaseService.uploadFile(file, `attachments/${currentBoard.id}`);
+        
+        if (!uploadResult.success) {
+            throw new Error('Falha no upload do arquivo');
+        }
+        
+        // Criar URL temporária para preview (apenas para imagens)
+        const isImage = file.type.startsWith('image/');
+        let previewUrl = null;
+        
+        if (isImage) {
+            previewUrl = URL.createObjectURL(file);
+        }
+        
+        const attachment = {
+            id: generateId(),
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadDate: new Date().toISOString(),
+            isImage: isImage,
+            previewUrl: previewUrl,
+            url: uploadResult.url, // URL do Firebase Storage
+            path: uploadResult.path // Caminho no Storage para deletar depois
+        };
+        
+        currentCard.attachments.push(attachment);
+        await saveBoardToFirebase();
+        updateCardModal();
+        updateAttachmentsDisplay();
+        
+        showNotification(`✅ Anexo "${file.name}" adicionado com sucesso!`, 'success');
+    } catch (error) {
+        console.error('Erro ao adicionar anexo:', error);
+        showNotification(`❌ Erro ao adicionar anexo: ${error.message}`, 'error');
     }
-    
-    const attachment = {
-        id: generateId(),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        uploadDate: new Date().toISOString(),
-        isImage: isImage,
-        previewUrl: previewUrl
-    };
-    
-    currentCard.attachments.push(attachment);
-    saveBoards();
-    updateCardModal();
-    updateAttachmentsDisplay();
-    
-    showNotification(`Anexo "${file.name}" adicionado com sucesso!`);
 }
 
 function updateAttachmentsDisplay() {
@@ -2775,6 +2792,14 @@ function previewAttachment(attachmentId) {
     const attachment = currentCard.attachments.find(a => a.id === attachmentId);
     if (!attachment || !attachment.isImage) return;
     
+    // Usar URL do Firebase ou previewUrl temporária
+    const imageUrl = attachment.url || attachment.previewUrl;
+    
+    if (!imageUrl) {
+        showNotification('❌ Não foi possível carregar a imagem', 'error');
+        return;
+    }
+    
     // Criar modal de preview
     const previewModal = document.createElement('div');
     previewModal.className = 'attachment-preview-modal';
@@ -2784,7 +2809,7 @@ function previewAttachment(attachmentId) {
             <button class="preview-close" onclick="closePreview()">
                 <i class="fas fa-times"></i>
             </button>
-            <img src="${attachment.previewUrl}" alt="${attachment.name}" class="preview-image">
+            <img src="${imageUrl}" alt="${attachment.name}" class="preview-image">
             <div class="preview-info">
                 <h4>${attachment.name}</h4>
                 <p>${formatFileSize(attachment.size)}</p>
@@ -2803,7 +2828,7 @@ function closePreview() {
     }
 }
 
-function downloadAttachment(attachmentId) {
+async function downloadAttachment(attachmentId) {
     if (!currentCard || !currentCard.attachments) return;
     
     const attachment = currentCard.attachments.find(a => a.id === attachmentId);
@@ -2812,52 +2837,68 @@ function downloadAttachment(attachmentId) {
         return;
     }
     
-    // Criar elemento de link temporário para download
-    const link = document.createElement('a');
-    
-    // Se for imagem com previewUrl (blob), usar ela
-    if (attachment.previewUrl) {
-        link.href = attachment.previewUrl;
-    } 
-    // Se for arquivo do Firebase Storage, usar a URL
-    else if (attachment.url) {
-        link.href = attachment.url;
+    try {
+        // Priorizar URL do Firebase Storage
+        let downloadUrl = attachment.url;
+        
+        if (!downloadUrl) {
+            showNotification('URL do arquivo não encontrada!', 'error');
+            return;
+        }
+        
+        // Baixar o arquivo
+        showNotification(`📥 Baixando "${attachment.name}"...`, 'info');
+        
+        const response = await fetch(downloadUrl);
+        const blob = await response.blob();
+        
+        // Criar elemento de link temporário para download
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = attachment.name || 'anexo';
+        
+        // Adicionar ao DOM, clicar e remover
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Limpar URL temporária
+        setTimeout(() => URL.revokeObjectURL(link.href), 100);
+        
+        showNotification(`✅ Download concluído!`, 'success');
+    } catch (error) {
+        console.error('Erro ao baixar anexo:', error);
+        showNotification(`❌ Erro ao baixar anexo: ${error.message}`, 'error');
     }
-    // Se for arquivo em base64
-    else if (attachment.data) {
-        link.href = attachment.data;
-    }
-    else {
-        showNotification('Não foi possível baixar o anexo!', 'error');
-        return;
-    }
-    
-    link.download = attachment.name || 'anexo';
-    link.target = '_blank';
-    
-    // Adicionar ao DOM, clicar e remover
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showNotification(`📥 Baixando "${attachment.name}"...`, 'success');
 }
 
-function removeAttachment(attachmentId) {
+async function removeAttachment(attachmentId) {
     if (!currentCard || !currentCard.attachments) return;
     
     const attachmentIndex = currentCard.attachments.findIndex(a => a.id === attachmentId);
     if (attachmentIndex > -1) {
-        // Revogar URL se for imagem
         const attachment = currentCard.attachments[attachmentIndex];
-        if (attachment.previewUrl) {
-            URL.revokeObjectURL(attachment.previewUrl);
-        }
         
-        currentCard.attachments.splice(attachmentIndex, 1);
-        saveBoards();
-        updateAttachmentsDisplay();
-        showNotification('Anexo removido com sucesso!');
+        try {
+            // Deletar arquivo do Firebase Storage se existir
+            if (attachment.path) {
+                showNotification('🗑️ Removendo anexo...', 'info');
+                await window.firebaseService.deleteFile(attachment.path);
+            }
+            
+            // Revogar URL blob temporária se for imagem
+            if (attachment.previewUrl) {
+                URL.revokeObjectURL(attachment.previewUrl);
+            }
+            
+            currentCard.attachments.splice(attachmentIndex, 1);
+            await saveBoardToFirebase();
+            updateAttachmentsDisplay();
+            showNotification('✅ Anexo removido com sucesso!', 'success');
+        } catch (error) {
+            console.error('Erro ao remover anexo:', error);
+            showNotification(`❌ Erro ao remover anexo: ${error.message}`, 'error');
+        }
     }
 }
 
