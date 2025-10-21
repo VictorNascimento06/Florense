@@ -949,6 +949,41 @@ async function shareBoardWithUser(boardId, userEmail) {
 }
 
 /**
+ * Remover membro de um quadro
+ */
+async function removeBoardMember(boardId, userEmail) {
+    try {
+        const user = getCurrentUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        // Buscar dados do usuário que será removido
+        const usersSnapshot = await db.collection('users')
+            .where('email', '==', userEmail)
+            .get();
+
+        if (usersSnapshot.empty) {
+            throw new Error('Usuário não encontrado');
+        }
+
+        const targetUserId = usersSnapshot.docs[0].id;
+
+        // Atualizar quadro no Firebase removendo o membro
+        await db.collection('boards').doc(boardId).update({
+            members: firebase.firestore.FieldValue.arrayRemove(targetUserId),
+            sharedWith: firebase.firestore.FieldValue.arrayRemove(userEmail),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log('✅ Membro removido com sucesso!');
+        return { success: true };
+    } catch (error) {
+        console.error('❌ Erro ao remover membro:', error);
+        return { success: false, error: error.message || 'Erro ao remover membro' };
+    }
+}
+
+
+/**
  * Remover acesso de um usuário ao board
  */
 async function removeBoardAccess(boardId, userEmail) {
@@ -1039,6 +1074,7 @@ window.firebaseService = {
     deleteBoard,
     getUserBoards,
     shareBoardWithUser,
+    removeBoardMember,
     removeBoardAccess,
     saveBoardToFirestore,
     migrateLocalBoardsToFirebase,
