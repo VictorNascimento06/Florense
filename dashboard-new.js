@@ -2838,18 +2838,28 @@ async function downloadAttachment(attachmentId) {
     }
     
     try {
-        // Priorizar URL do Firebase Storage
-        let downloadUrl = attachment.url;
-        
-        if (!downloadUrl) {
-            showNotification('URL do arquivo não encontrada!', 'error');
+        // Verificar se tem URL do Firebase Storage
+        if (!attachment.url) {
+            // Anexo antigo sem URL do Firebase - sugerir reenvio
+            const confirmDelete = confirm(
+                `Este anexo foi adicionado antes da atualização do sistema e não pode ser baixado.\n\n` +
+                `Deseja removê-lo? Você pode anexar novamente depois.`
+            );
+            
+            if (confirmDelete) {
+                await removeAttachment(attachmentId);
+            }
             return;
         }
         
-        // Baixar o arquivo
+        // Baixar o arquivo do Firebase Storage
         showNotification(`📥 Baixando "${attachment.name}"...`, 'info');
         
-        const response = await fetch(downloadUrl);
+        const response = await fetch(attachment.url);
+        if (!response.ok) {
+            throw new Error('Falha ao baixar arquivo');
+        }
+        
         const blob = await response.blob();
         
         // Criar elemento de link temporário para download
@@ -2868,7 +2878,7 @@ async function downloadAttachment(attachmentId) {
         showNotification(`✅ Download concluído!`, 'success');
     } catch (error) {
         console.error('Erro ao baixar anexo:', error);
-        showNotification(`❌ Erro ao baixar anexo: ${error.message}`, 'error');
+        showNotification(`❌ Erro ao baixar anexo. Tente novamente.`, 'error');
     }
 }
 
