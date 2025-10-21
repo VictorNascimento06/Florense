@@ -1502,7 +1502,7 @@ function getBoardBackground(backgroundType) {
 // ============================================
 // CARD OPERATIONS
 // ============================================
-function addCard(listId, title) {
+async function addCard(listId, title) {
     const list = currentBoard.lists.find(l => l.id === listId);
     if (!list) return;
 
@@ -1518,11 +1518,14 @@ function addCard(listId, title) {
     };
 
     list.cards.push(newCard);
-    saveBoards();
+    
+    // 🔥 SALVAR NO FIREBASE
+    await saveBoardToFirebase();
+    
     renderLists(); // Re-renderizar todas as listas para garantir consistência
 }
 
-function addCardWithDetails(listId, cardData) {
+async function addCardWithDetails(listId, cardData) {
     const list = currentBoard.lists.find(l => l.id === listId);
     if (!list) return;
 
@@ -1547,7 +1550,10 @@ function addCardWithDetails(listId, cardData) {
     };
 
     list.cards.push(newCard);
-    saveBoards();
+    
+    // 🔥 SALVAR NO FIREBASE
+    await saveBoardToFirebase();
+    
     renderLists(); // Re-renderizar todas as listas para garantir consistência
 }
 
@@ -1575,18 +1581,21 @@ function findCard(cardId) {
     return null;
 }
 
-function updateCardInBoard(card) {
+async function updateCardInBoard(card) {
     for (let list of currentBoard.lists) {
         const cardIndex = list.cards.findIndex(c => c.id === card.id);
         if (cardIndex !== -1) {
             list.cards[cardIndex] = card;
-            saveBoards();
+            
+            // 🔥 SALVAR NO FIREBASE
+            await saveBoardToFirebase();
+            
             break;
         }
     }
 }
 
-function deleteCard() {
+async function deleteCard() {
     if (!currentCard) return;
 
     if (confirm('Tem certeza que deseja excluir este cartão?')) {
@@ -1594,7 +1603,10 @@ function deleteCard() {
             const cardIndex = list.cards.findIndex(c => c.id === currentCard.id);
             if (cardIndex !== -1) {
                 list.cards.splice(cardIndex, 1);
-                saveBoards();
+                
+                // 🔥 SALVAR NO FIREBASE
+                await saveBoardToFirebase();
+                
                 closeCardDetailModal();
                 renderLists();
                 break;
@@ -1894,6 +1906,32 @@ function saveBoards() {
     }
     
     console.log('Board salvo e sincronizado com membros');
+}
+
+// 🔥 SALVAR BOARD NO FIREBASE
+async function saveBoardToFirebase() {
+    if (!currentBoard || !currentBoard.id) return;
+    
+    try {
+        if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+            console.log('💾 Salvando board no Firebase...', currentBoard.name);
+            
+            // Atualizar board no Firebase com as listas (que contêm os cards)
+            const result = await window.firebaseService.updateBoard(currentBoard.id, {
+                lists: currentBoard.lists,
+                lastModified: new Date().toISOString(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            if (result.success) {
+                console.log('✅ Board atualizado no Firebase!');
+            } else {
+                console.error('❌ Erro ao salvar no Firebase:', result.error);
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro ao salvar board no Firebase:', error);
+    }
 }
 
 // Sincronizar quadro com todos os membros compartilhados
